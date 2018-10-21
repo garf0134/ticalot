@@ -15,6 +15,8 @@ public class HUD : MonoBehaviour
 
   public GameObject piecePrefab;
   public GameObject tilePrefab;
+  public GameObject playerPrefab;
+
   public Color tileHoverColor;
   public Color tileHoverIllegalMoveColor;
   public Color tileNormalColor;
@@ -23,13 +25,13 @@ public class HUD : MonoBehaviour
   public float tileDestroyRate = 10.0f;
 
   private Match match;
-  private bool awaitingPlayerInput;
   private Tile hovered;
 
   private Coroutine tileSetup;
   private Coroutine tileCleanup;
   private Coroutine turnIntermission;
-  private Coroutine waitForInput;
+
+  public List<PlayerBase> players = new List<PlayerBase>();
 
   // Start is called before the first frame update
   void Start()
@@ -117,15 +119,41 @@ public class HUD : MonoBehaviour
   private void OnNewMatch(Match m)
   {
     match = m;
-    match.OnTurnBegan += OnTurnBegan;
+    match.OnTurnBegan += OnTurnBegan; ;
     match.OnTurnEnded += OnTurnEnded;
     match.OnGameEnded += OnGameEnded;
+
+    foreach (Side s in m.turnOrder)
+    {
+      GameObject playerObject = new GameObject(s.name);
+      PlayerBase player = null;
+      switch (s.role)
+      {
+        case Side.Role.Human:
+          player = playerObject.AddComponent<HumanPlayer>();
+          break;
+        case Side.Role.AI:
+          player = playerObject.AddComponent<AIPlayer>();
+          break;
+      }
+      
+      if (player == null)
+      {
+        throw new System.ArgumentException("Invalid role argument");
+      }
+      player.side = s;
+      player.match = m;
+      player.hud = this;
+      player.piecePrefab = piecePrefab;
+      player.transform.SetParent(match.transform);
+
+      players.Add(player);
+    }
     tileSetup = StartCoroutine(SetupTiles(m.ruleset, m.board));
   }
 
   private void OnGameEnded(Match m, Board b, Side winner)
   {
-    awaitingPlayerInput = false;
     UpdateHover(null);
 
     if (!m.HasWinner())
@@ -160,15 +188,11 @@ public class HUD : MonoBehaviour
 
   private void OnTurnBegan(Match m, int turn, Side[] sides)
   {
-    if ( sides[turn].role == Side.Role.Human )
-    {
-      awaitingPlayerInput = true;
-    }
+
   }
 
   private void OnTurnEnded(Match m, int turn, Side[] sides)
   {
-    awaitingPlayerInput = false;
     UpdateHover(null);
 
     turnIntermission = StartCoroutine(TurnIntermission());
@@ -183,7 +207,7 @@ public class HUD : MonoBehaviour
     }
   }
 
-  private void UpdateHover(Tile t)
+  public void UpdateHover(Tile t)
   {
     if (hovered != null)
     {
@@ -194,7 +218,7 @@ public class HUD : MonoBehaviour
 
     hovered = t;
 
-    if (t != null)
+    if (t != null && match != null)
     {
       Material m = t.GetComponentInChildren<MeshRenderer>().material;
       if (match.ruleset.ValidateMove(match.board, t, match.turnOrder[match.turn]))
@@ -211,47 +235,11 @@ public class HUD : MonoBehaviour
   // Update is called once per frame
   void Update()
   {
-    if (match == null || tileSetup != null || tileCleanup != null || waitForInput != null)
+    // Saved for later when this if-statement will prevent 'normal' processing
+    // when some special procesing is occuring.
+    if (match == null || tileSetup != null || tileCleanup != null )
     {
       return;
-    }
-
-    if (awaitingPlayerInput)
-    {
-      Ray r = Camera.main.ScreenPointToRay(Input.mousePosition);
-      RaycastHit hit;
-      if (Physics.Raycast(r, out hit))
-      {
-        Tile t = hit.collider.GetComponentInParent<Tile>();
-        if (t != null)
-        {
-          UpdateHover(t);
-
-          if (Input.GetMouseButtonDown(0))
-          {
-            Side currentSide = match.turnOrder[match.turn];
-            GameObject pieceInstance = Instantiate<GameObject>(piecePrefab);
-            Piece piece = pieceInstance.GetComponent<Piece>();
-            piece.side = currentSide;
-            piece.GetComponentInChildren<MeshRenderer>().material.color = currentSide.color;
-
-            if (match.RegisterMove(currentSide, t, piece))
-            {
-              piece.transform.SetParent(t.transform);
-              piece.transform.localPosition = Vector3.zero;
-            }
-            else
-            {
-              DestroyImmediate(pieceInstance);
-              pieceInstance = null;
-            }
-          }
-        }
-      }
-      else
-      {
-        UpdateHover(null);
-      }
     }
   }
 }

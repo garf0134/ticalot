@@ -236,6 +236,7 @@ MonoBehaviour:
     type: 3}
   tilePrefab: {fileID: 3302051712911341008, guid: 3ecaa4047fa6fbe47ad613d6d92c12df,
     type: 3}
+  playerPrefab: {fileID: 0}
   tileHoverColor: {r: 0, g: 0.7933049, b: 1, a: 0.49803922}
   tileHoverIllegalMoveColor: {r: 0.7169812, g: 0.116058685, b: 0.057493784, a: 1}
   tileNormalColor: {r: 1, g: 1, b: 1, a: 0.49803922}
