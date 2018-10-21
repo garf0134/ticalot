@@ -1,18 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class Side
+public class WinConditionSetting : MonoBehaviour
 {
-  public enum Role
-  {
-    Human,
-    AI
-  }
-  public Role role;
-  public Color color;
-  public Sprite icon;
-  public string name;
+  public Ruleset.WinCondition winCondition;
 
   // Start is called before the first frame update
   void Start()
