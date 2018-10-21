@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -18,7 +19,7 @@ public class Match : MonoBehaviour
   public delegate void MatchBeganEvent(Match m, Side[] sides);
   public delegate void MatchEndEvent(Match m, Side winner);
   public delegate void TurnEvent(Match m, int turn, Side[] sides);
-  public delegate bool ValidMovePredicate(Board b, Tile t, Piece p);
+  public delegate bool ValidMovePredicate(Board b, Tile t, Side s);
 
   public event TurnEvent OnTurnBegan;
   public event TurnEvent OnTurnEnded;
@@ -45,7 +46,8 @@ public class Match : MonoBehaviour
 
   public void EndTurn()
   {
-    OnTurnEnded?.Invoke(this, turn++, turnOrder.ToArray());
+    OnTurnEnded?.Invoke(this, turn, turnOrder.ToArray());
+    turn = (turn + 1) % turnOrder.Count;
   }
 
   public void BeginMatch()
@@ -69,18 +71,20 @@ public class Match : MonoBehaviour
   public void EndGame(Side winner)
   {
     games[winner]++;
+    
     OnGameEnded?.Invoke(this, board, winner);
   }
 
   public bool RegisterMove(Side s, Tile t, Piece p)
   {
-    if (OnMoveAttempted?.Invoke(board, t, p)  == false)
+    if (OnMoveAttempted?.Invoke(board, t, s)  == false)
     {
       return false;
     }
 
     t.piece = p;
-    OnTurnEnded(this, turn, turnOrder.ToArray());
+
+    EndTurn();
     return true;
   }
   
@@ -94,5 +98,18 @@ public class Match : MonoBehaviour
   void Update()
   {
 
+  }
+
+  public bool HasWinner()
+  {
+    foreach (var pair in games)
+    {
+      if (pair.Value >= ruleset.gamesToWin)
+      {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

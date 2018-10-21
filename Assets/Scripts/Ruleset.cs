@@ -39,10 +39,10 @@ public class Ruleset: ScriptableObject
     m = match;
     m.OnTurnEnded += OnTurnEnded;
     m.OnGameEnded += OnGamEnded;
-    m.OnMoveAttempted += OnMoveAttempted;
+    m.OnMoveAttempted += ValidateMove;
   }
 
-  private bool OnMoveAttempted(Board b, Tile t, Piece p)
+  public bool ValidateMove(Board b, Tile t, Side s)
   {
     switch (validMove)
     {

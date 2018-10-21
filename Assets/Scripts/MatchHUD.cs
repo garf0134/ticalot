@@ -38,9 +38,15 @@ public class MatchHUD : MonoBehaviour
     m.OnGameEnded += OnGameEnded;
     m.OnTurnBegan += OnTurnBegan;
     m.OnTurnEnded += OnTurnEnded;
+    m.OnMatchEnded += OnMatchEnded;
   }
 
-   public void Show()
+  private void OnMatchEnded(Match m, Side winner)
+  {
+    Hide();
+  }
+
+  public void Show()
   {
     Animator animator = GetComponent<Animator>();
     animator.SetTrigger("Show");

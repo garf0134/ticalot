@@ -44,7 +44,7 @@ public class Board : MonoBehaviour
   }
 
   /// <summary>
-  /// (Unoptimized) check for a win condition for the given Side <paramref name="s"/>. 
+  /// (Half optimized) check for a win condition for the given Side <paramref name="s"/>. 
   /// Handles the generic match-N where N is the number of consectuive tiles occupied by a piece belong to the given Side.
   /// </summary>
   /// <param name="s"></param>
@@ -68,7 +68,7 @@ public class Board : MonoBehaviour
   {
     if (t != null && t.piece != null && t.piece.side == s)
     {
-      if (numIterations == 0)
+      if (numIterations == 1)
       {
         return true;
       }
@@ -83,13 +83,17 @@ public class Board : MonoBehaviour
     switch (d)
     {
       case Direction.Vertical:
-        return tiles[t.row + 1, t.column];
+        if ((t.row + 1) < rows) { return tiles[t.row + 1, t.column]; }
+        break;
       case Direction.Horizaontal:
-        return tiles[t.row, t.column + 1];
+        if ((t.column + 1) < cols) { return tiles[t.row, t.column + 1]; }
+        break;
       case Direction.Diagonal_TopDown:
-        return tiles[t.row + 1, t.column + 1];
+        if ((t.row + 1) < rows && (t.column + 1) < cols) { return tiles[t.row + 1, t.column + 1]; }
+        break;
       case Direction.Diagonal_BottomUp:
-        return tiles[t.row - 1, t.column + 1];
+        if ((t.row - 1) >= 0 && (t.column + 1) < cols) { return tiles[t.row - 1, t.column + 1]; }
+        break;
     }
     return null;
   }
