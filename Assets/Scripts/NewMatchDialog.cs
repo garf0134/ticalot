@@ -28,16 +28,25 @@ public class NewMatchDialog : MonoBehaviour
     winConditions.AddRange(GetComponentsInChildren<WinConditionSetting>());
     movementRules.AddRange(GetComponentsInChildren<MovementRuleSetting>());
 
-    // Randomize the sides icons and colors and add callbacks
-    foreach (var playerSetting in playerSettings)
+    // Randomize the sides icons and colors and add callbacks. Also set the first two
+    // player settings toggles to enabled and read-only
+
+    for (int i = 0; i < playerSettings.Count; i++)
     {
+      var playerSetting = playerSettings[i];
+      if ( i < 2 )
+      {
+        playerSetting.sideEnabled.isOn = true;
+        playerSetting.sideEnabled.interactable = false;
+      }
+
       playerSetting.colorDropdown.onValueChanged.AddListener((int value) =>
       {
         // Build a list of all the options
         List<int> valuesNotChosen = new List<int>();
-        for (int i = 0; i < playerSetting.colorDropdown.options.Count; i++)
+        for (int j = 0; j < playerSetting.colorDropdown.options.Count; j++)
         {
-          valuesNotChosen.Add(i);
+          valuesNotChosen.Add(j);
         }
 
         // Remove all options that are taken already by some other player
@@ -56,10 +65,10 @@ public class NewMatchDialog : MonoBehaviour
         }
 
         // If the requested values is not available, choose the first available
-        if ( valuesNotChosen.IndexOf(value) < 0 )
+        if (valuesNotChosen.IndexOf(value) < 0)
         {
           playerSetting.colorDropdown.value = valuesNotChosen[0];
-        }        
+        }
       });
 
       playerSetting.colorDropdown.value = Random.Range(0, playerSetting.colorDropdown.options.Count);
@@ -67,19 +76,19 @@ public class NewMatchDialog : MonoBehaviour
     }
 
     rows.onValidateInput += ValidateRowsAndColumns;
-    rows.onValueChanged.AddListener((string newValue) => { r.rows = int.Parse(newValue); });
+    rows.onValueChanged.AddListener((string newValue) => { if (newValue.Length > 0) { r.rows = int.Parse(newValue); } });
 
     columns.onValidateInput += ValidateRowsAndColumns;
-    columns.onValueChanged.AddListener((string newValue) => { r.cols = int.Parse(newValue); });
+    columns.onValueChanged.AddListener((string newValue) => { if (newValue.Length > 0) { r.cols = int.Parse(newValue); }  });
 
     matchN.onValidateInput += ValidateMatchN;
-    matchN.onValueChanged.AddListener((string newValue) => { r.consecutiveTiles = int.Parse(newValue); });
+    matchN.onValueChanged.AddListener((string newValue) => { if (newValue.Length > 0) { r.consecutiveTiles = int.Parse(newValue); } });
 
     maxGames.onValidateInput += ValidateMaxGames;
-    maxGames.onValueChanged.AddListener((string newValue) => { r.maxGames = int.Parse(newValue); });
+    maxGames.onValueChanged.AddListener((string newValue) => { if (newValue.Length > 0) { r.maxGames = int.Parse(newValue); }  });
 
     gamesToWin.onValidateInput += ValidateGamesToWin;
-    gamesToWin.onValueChanged.AddListener((string newValue) => { r.gamesToWin = int.Parse(newValue); });
+    gamesToWin.onValueChanged.AddListener((string newValue) => { if (newValue.Length > 0) { r.gamesToWin = int.Parse(newValue); } });
   }
 
   private char ValidateRowsAndColumns(string s, int charIndex, char addedChar)
@@ -208,7 +217,7 @@ public class NewMatchDialog : MonoBehaviour
       Side s = new Side();
       s.color = playerSetting.SelectedColor();
       s.role = playerSetting.SelectedRole();
-      s.icon = playerSetting.SelectedIcon();
+      s.iconName = playerSetting.SelectedIcon();
       s.name = playerSetting.SelectedName();
       m.RegisterSide(s);
     }

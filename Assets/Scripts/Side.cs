@@ -11,7 +11,7 @@ public class Side
   }
   public Role role;
   public Color color;
-  public Sprite icon;
+  public string iconName;
   public string name;
 
   // Start is called before the first frame update

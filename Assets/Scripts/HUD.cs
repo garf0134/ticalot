@@ -38,33 +38,48 @@ public class HUD : MonoBehaviour
     newMatch.Show();
   }
 
-  IEnumerator SetupTiles(Board b)
+  IEnumerator SetupTiles(Ruleset ruleset, Board b)
   {
-    for (int r = 0; r < b.rows; r++)
+    transform.position += Vector3.up * 4.0f;
+    yield return new WaitForSecondsRealtime(2.0f);
+    for (int r = 0; r < ruleset.rows; r++)
     {
-      for (int c = 0; c < b.cols; c++ )
+      for (int c = 0; c < ruleset.cols; c++ )
       {
         GameObject tileInstance = Instantiate<GameObject>(tilePrefab);
         Tile t = tileInstance.GetComponent<Tile>();
-        Material m = tileInstance.GetComponent<Material>();
+        Material m = tileInstance.GetComponent<MeshRenderer>().material;
         m.color = tileNormalColor;
 
-        Vector3 finalBoardPosition = Vector3.right * (c - b.cols / 2) * tileDimensions + Vector3.forward * (r - b.rows / 2) * tileDimensions;
+        Vector3 finalBoardPosition = Vector3.right * (c - ruleset.cols / 2) * tileDimensions + Vector3.forward * (r - ruleset.rows / 2) * tileDimensions;
         t.transform.SetParent(b.transform);
-        t.transform.localPosition = finalBoardPosition;
+        t.transform.position = b.transform.position + finalBoardPosition + Vector3.up * 10.0f;
 
         yield return new WaitForSecondsRealtime(1 / tileDropRate);
       }
-
-      b.ScanForTiles();
-      match.BeginMatch();
     }
+
+    yield return new WaitForSecondsRealtime(1.0f);
+    matchHUD.Show();
+    yield return new WaitForSecondsRealtime(0.5f);
+
+    b.ScanForTiles();
+    match.BeginMatch();
+
+    yield return new WaitForSecondsRealtime(0.5f);
+    match.BeginGame();
+
+    yield return new WaitForSecondsRealtime(0.5f);
+    match.BeginTurn();
+
+    tileSetup = null;
   }
 
   private void OnNewMatch(Match m)
   {
     match = m;
-    tileSetup = StartCoroutine(SetupTiles(m.board));
+    match.OnTurnBegan += OnTurnBegan;
+    tileSetup = StartCoroutine(SetupTiles(m.ruleset, m.board));
   }
 
   private void OnTurnBegan(Match m, int turn, Side[] sides)
@@ -94,12 +109,12 @@ public class HUD : MonoBehaviour
         {
           if (hovered != null)
           {
-            Material previousHoveredTileMaterial = hovered.GetComponentInChildren<Material>();
+            Material previousHoveredTileMaterial = hovered.GetComponentInChildren<MeshRenderer>().material;
             previousHoveredTileMaterial.color = tileNormalColor;
             hovered = null;
           }
 
-          Material m = t.GetComponentInChildren<Material>();
+          Material m = t.GetComponentInChildren<MeshRenderer>().material;
           m.color = tileHoverColor;
           hovered = t;
 
@@ -122,7 +137,7 @@ public class HUD : MonoBehaviour
       }
       else
       {
-        Material m = hovered.GetComponentInChildren<Material>();
+        Material m = hovered.GetComponentInChildren<MeshRenderer>().material;
         m.color = tileNormalColor;
         hovered = null;
       }

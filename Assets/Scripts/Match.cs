@@ -9,6 +9,7 @@ public class Match : MonoBehaviour
   public int side = 0;
 
   public Ruleset ruleset;
+  public Board board;
   public List<Side> turnOrder = new List<Side>();
   public Dictionary<Side, int> games = new Dictionary<Side, int>();
   
@@ -30,11 +31,10 @@ public class Match : MonoBehaviour
 
   public event ValidMovePredicate OnMoveAttempted;
 
-  public Board board { get; set; }
-
   public void RegisterSide(Side s)
   {
     turnOrder.Add(s);
+    games[s] = 0;
   }
 
   public void BeginTurn()

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.ComponentModel;
 using TMPro;
 
 public class MatchHUD : MonoBehaviour
@@ -34,10 +35,21 @@ public class MatchHUD : MonoBehaviour
     UpdateRules(m);
     UpdateGameScore(m);
 
-
     m.OnGameEnded += OnGameEnded;
     m.OnTurnBegan += OnTurnBegan;
     m.OnTurnEnded += OnTurnEnded;
+  }
+
+   public void Show()
+  {
+    Animator animator = GetComponent<Animator>();
+    animator.SetTrigger("Show");
+  }
+
+  public void Hide()
+  {
+    Animator animator = GetComponent<Animator>();
+    animator.SetTrigger("Hide");
   }
 
   private void OnGameEnded(Match m, Board b, Side winner)
@@ -67,8 +79,11 @@ public class MatchHUD : MonoBehaviour
 
   public void UpdateRules(Match m)
   {
-    gameRulesName.text = m.ruleset.name;
-    gameWinCondition.text = m.ruleset.winCondition.ToString();
+    var winCondition = m.ruleset.winCondition.GetAttribute<NamedAttribute>();
+    var validMove = m.ruleset.validMove.GetAttribute<NamedAttribute>();
+
+    gameRulesName.text = string.Format(winCondition.name, m.ruleset.consecutiveTiles);
+    gameWinCondition.text = string.Format(winCondition.description, m.ruleset.consecutiveTiles);
     matchWinCondition.text = string.Format("First to {0} of {1} games", m.ruleset.gamesToWin, m.ruleset.maxGames);
   }
 
@@ -78,10 +93,10 @@ public class MatchHUD : MonoBehaviour
     switch (s.role)
     {
       case Side.Role.Human:
-        turnInstructions.text = string.Format("{0} Team's Turn.\nPlease select a tile.", s.name);
+        turnInstructions.text = string.Format("<sprite name=\"{0}\"> {1} Team's Turn.\nPlease select a tile.", s.iconName, s.name);
         break;
       case Side.Role.AI:
-        turnInstructions.text = string.Format("{0} Team's Turn.\nPlease wait");
+        turnInstructions.text = string.Format("<sprite name=\"{0}\"> {1} Team's Turn.\nPlease wait", s.iconName, s.name);
         break;
     }
     turnInstructions.enabled = true;

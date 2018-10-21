@@ -6,6 +6,18 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2648682395206879025}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8335736402116083668 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6299549123851385061, guid: 71aa1454473696f489a97b2efb4a67ce,
+    type: 3}
+  m_PrefabInstance: {fileID: 2648682395206879025}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d394cad5fd5d01a46920b08b93e22e57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2784359676226682677
 GameObject:
   m_ObjectHideFlags: 0
@@ -53,7 +65,8 @@ MonoBehaviour:
   game: 0
   turn: 0
   side: 0
-  turnOrder: []
+  ruleset: {fileID: 0}
+  board: {fileID: 8335736402116083668}
 --- !u!1001 &2648682395206879025
 PrefabInstance:
   m_ObjectHideFlags: 0

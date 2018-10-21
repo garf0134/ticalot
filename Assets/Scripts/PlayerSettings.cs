@@ -25,7 +25,7 @@ public class PlayerSettings : MonoBehaviour
     {
       Dropdown.OptionData data = new Dropdown.OptionData();
       data.image = sprite;
-      data.text = "";
+      data.text = sprite.name;
       iconOptions.Add(data);
     }
 
@@ -59,9 +59,9 @@ public class PlayerSettings : MonoBehaviour
     return colorDropdown.options[colorDropdown.value].image.texture.GetPixel(0, 0);
   }
 
-  public Sprite SelectedIcon()
+  public string SelectedIcon()
   {
-    return iconDropdown.options[iconDropdown.value].image;
+    return iconDropdown.options[iconDropdown.value].text;
   }
 
   public Side.Role SelectedRole()

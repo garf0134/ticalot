@@ -2,6 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public class NamedAttribute: System.Attribute
+{
+  public string name { get; set; }
+  public string description { get; set; }
+}
+
 [System.Serializable]
 public class Ruleset: ScriptableObject
 { 
@@ -14,12 +20,15 @@ public class Ruleset: ScriptableObject
 
   public enum WinCondition
   {
+    [Named(name = "Match N", description ="Match {0} Consecutive Tiles")]
     MatchN
   }
   public WinCondition winCondition;
   public enum ValidMove
-  {
+  { 
+    [Named(name = "Anywhere!", description = "Place your pieces anywhere there is an unoccupied tile")]
     Anywhere, // i.e. Tic-Tac-Toe
+    [Named(name ="Drop", description ="Place your pieces above an occupied tile")]
     OnTop // i.e. Connect-N
   }
   public ValidMove validMove;
