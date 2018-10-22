@@ -57,19 +57,27 @@ public class Ruleset: ScriptableObject
 
   private void OnGamEnded(Match m, Board b, Side winner)
   {
-    int gamesWonBySide = m.games[winner];
-    if (gamesWonBySide >= gamesToWin)
+    if (winner != null)
     {
-      m.EndMatch(winner);
+      int gamesWonBySide = m.games[winner];
+      if (gamesWonBySide >= gamesToWin)
+      {
+        m.EndMatch(winner);
+      }
     }
   }
 
   private void OnTurnEnded(Match m, int turn, Side[] sides)
   {
+    if ( m.Stalemate())
+    {
+      m.EndGame(null);
+    }
+
     switch (winCondition)
     {
       case WinCondition.MatchN:
-        if (m.board.CheckConsecutiveTiles(sides[turn], consecutiveTiles))
+        if (m.board.CheckConsecutiveTiles(sides[turn], consecutiveTiles) )
         {
           m.EndGame(sides[turn]);
         }

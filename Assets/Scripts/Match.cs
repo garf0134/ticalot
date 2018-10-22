@@ -7,7 +7,6 @@ public class Match : MonoBehaviour
 {
   public int game = 0;
   public int turn = 0;
-  public int side = 0;
 
   public Ruleset ruleset;
   public Board board;
@@ -40,7 +39,6 @@ public class Match : MonoBehaviour
 
   public void BeginTurn()
   {
-    side = 0;
     OnTurnBegan?.Invoke(this, turn, turnOrder.ToArray());
   }
 
@@ -70,7 +68,11 @@ public class Match : MonoBehaviour
 
   public void EndGame(Side winner)
   {
-    games[winner]++;
+    if ( winner != null)
+    {
+      games[winner]++;
+    }
+    
     
     OnGameEnded?.Invoke(this, board, winner);
   }
@@ -87,7 +89,25 @@ public class Match : MonoBehaviour
     EndTurn();
     return true;
   }
-  
+
+  public bool Stalemate()
+  {
+    bool unoccupiedTile = false;
+    for (int r=0; r < board.rows; r++)
+    {
+      for (int c=0; c < board.cols; c++)
+      {
+        if (board[r,c].piece == null)
+        {
+          unoccupiedTile = true;
+          break;
+        }
+      }
+    }
+
+    return !unoccupiedTile;
+  }
+
   // Start is called before the first frame update
   void Start()
   {

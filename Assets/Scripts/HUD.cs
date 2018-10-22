@@ -88,8 +88,6 @@ public class HUD : MonoBehaviour
 
   private IEnumerator CleanupPieces(Board b)
   {
-    yield return turnIntermission;
-
     foreach (Tile t in b.GetComponentsInChildren<Tile>())
     {
       if (t.piece)
@@ -104,7 +102,6 @@ public class HUD : MonoBehaviour
     OnPiecesCleanedUp();
 
     tileCleanup = null;
-    
   }
 
   private void OnPiecesCleanedUp()
@@ -159,9 +156,15 @@ public class HUD : MonoBehaviour
   {
     UpdateHover(null);
 
+    if (turnIntermission != null)
+    {
+      StopCoroutine(turnIntermission);
+      turnIntermission = null;
+    }
+
     if (!m.HasWinner())
     {
-      StartCoroutine(CleanupPieces(b));
+      tileCleanup = StartCoroutine(CleanupPieces(b));
     }
     else
     {
@@ -198,7 +201,10 @@ public class HUD : MonoBehaviour
   {
     UpdateHover(null);
 
-    turnIntermission = StartCoroutine(TurnIntermission());
+    if ( tileCleanup == null )
+    {
+      turnIntermission = StartCoroutine(TurnIntermission());
+    }
   }
 
   private IEnumerator TurnIntermission()
