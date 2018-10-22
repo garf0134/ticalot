@@ -14,6 +14,7 @@ public class Side
   public Color color;
   public string iconName;
   public string name;
+  public AIPlayer.Strategy aiStrategy;
 
   // Start is called before the first frame update
   void Start()

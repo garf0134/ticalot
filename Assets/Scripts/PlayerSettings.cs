@@ -69,12 +69,25 @@ public class PlayerSettings : MonoBehaviour
     string roleText = roleDropdown.options[roleDropdown.value].text;
     foreach (var role in System.Enum.GetValues(typeof(Side.Role)))
     {
-      if ( ((Side.Role)role).ToString() == roleText)
+      if (roleText.IndexOf(((Side.Role)role).ToString()) >= 0)
       {
         return (Side.Role)role;
       }
     }
     return Side.Role.Human;
+  }
+
+  public AIPlayer.Strategy SelectedAIRoleStrategy()
+  {
+    string roleText = roleDropdown.options[roleDropdown.value].text;
+    foreach (var strategy in System.Enum.GetValues(typeof(AIPlayer.Strategy)))
+    {
+      if (roleText.IndexOf(((AIPlayer.Strategy)strategy).ToString()) >= 0)
+      {
+        return (AIPlayer.Strategy)strategy;
+      }
+    }
+    return AIPlayer.Strategy.Normal;
   }
 
   // Update is called once per frame

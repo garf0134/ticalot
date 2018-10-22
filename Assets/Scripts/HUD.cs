@@ -56,12 +56,13 @@ public class HUD : MonoBehaviour
       {
         GameObject tileInstance = Instantiate<GameObject>(tilePrefab);
         Tile t = tileInstance.GetComponent<Tile>();
+        t.name = string.Format("{0},{1}", r, c);
         t.row = r;
         t.column = c;
         Material m = tileInstance.GetComponent<MeshRenderer>().material;
         m.color = tileNormalColor;
 
-        Vector3 finalBoardPosition = Vector3.right * (c - ruleset.cols / 2) * tileDimensions + Vector3.forward * (r - ruleset.rows / 2) * tileDimensions;
+        Vector3 finalBoardPosition = Vector3.right * (c - ruleset.cols / 2.0f) * tileDimensions + Vector3.forward * ( (ruleset.rows - r - 1) - ruleset.rows / 2.0f) * tileDimensions;
         t.transform.SetParent(b.transform);
         t.transform.position = b.transform.position + finalBoardPosition + Vector3.up * 10.0f;
 
@@ -133,10 +134,12 @@ public class HUD : MonoBehaviour
           player = playerObject.AddComponent<HumanPlayer>();
           break;
         case Side.Role.AI:
-          player = playerObject.AddComponent<AIPlayer>();
+          AIPlayer aiPlayer = playerObject.AddComponent<AIPlayer>();
+          aiPlayer.strategy = s.aiStrategy;
+          player = aiPlayer;
           break;
       }
-      
+
       if (player == null)
       {
         throw new System.ArgumentException("Invalid role argument");

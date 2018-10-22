@@ -243,6 +243,7 @@ MonoBehaviour:
   tileDimensions: 2
   tileDropRate: 10
   tileDestroyRate: 10
+  players: []
 --- !u!95 &51391595
 Animator:
   serializedVersion: 3
@@ -1537,13 +1538,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 534669902}
-  m_LocalRotation: {x: 0.2952188, y: -0.64253086, z: 0.36085978, w: 0.6080956}
-  m_LocalPosition: {x: 4.57, y: 7.47, z: 0.37}
+  m_LocalRotation: {x: -0.25580287, y: -0.62139416, z: 0.26723802, w: -0.690665}
+  m_LocalPosition: {x: -10.6, y: 9.87, z: 0.37}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 55.363003, y: -90, z: 6.0090003}
+  m_LocalEulerAnglesHint: {x: 43.272003, y: -277.645, z: -4.0350003}
 --- !u!1 &570471656
 GameObject:
   m_ObjectHideFlags: 0
@@ -3173,7 +3174,7 @@ MonoBehaviour:
     m_HighlightedTrigger: Highlighted
     m_PressedTrigger: Pressed
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 1372608419}
   toggleTransition: 1
   graphic: {fileID: 1282544107}
@@ -7215,6 +7216,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9052084532361129947, guid: 4b82d32411a10bc43b27359e0ad07149,
+        type: 3}
+      propertyPath: m_Value
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7748958859650265518, guid: 4b82d32411a10bc43b27359e0ad07149,
+        type: 3}
+      propertyPath: m_Text
+      value: AI-PureRandom
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4b82d32411a10bc43b27359e0ad07149, type: 3}

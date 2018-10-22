@@ -30,6 +30,7 @@ public class NewMatchDialog : MonoBehaviour
 
     // Randomize the sides icons and colors and add callbacks. Also set the first two
     // player settings toggles to enabled and read-only
+    List<int> colorsNotChosen = new List<int>();
 
     for (int i = 0; i < playerSettings.Count; i++)
     {
@@ -71,8 +72,17 @@ public class NewMatchDialog : MonoBehaviour
         }
       });
 
-      playerSetting.colorDropdown.value = Random.Range(0, playerSetting.colorDropdown.options.Count);
+      
       playerSetting.iconDropdown.value = Random.Range(0, playerSetting.iconDropdown.options.Count);
+
+      // The first playersetting gets all the color choices
+      if ( i == 0)
+      {
+        colorsNotChosen.AddRange(System.Linq.Enumerable.Range(0, playerSetting.colorDropdown.options.Count));
+      }
+
+      playerSetting.colorDropdown.value = colorsNotChosen[Random.Range(0, colorsNotChosen.Count)];
+      colorsNotChosen.Remove(playerSetting.colorDropdown.value);
     }
 
     rows.onValidateInput += ValidateRowsAndColumns;
@@ -219,6 +229,8 @@ public class NewMatchDialog : MonoBehaviour
       s.role = playerSetting.SelectedRole();
       s.iconName = playerSetting.SelectedIcon();
       s.name = playerSetting.SelectedName();
+      s.aiStrategy = playerSetting.SelectedAIRoleStrategy();
+
       m.RegisterSide(s);
     }
     r.SetMatch(m);

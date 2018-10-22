@@ -64,8 +64,8 @@ public class Match : MonoBehaviour
   public void BeginGame()
   {
     game++;
-    OnGameBegan?.Invoke(this, game, board, turnOrder.ToArray());
     turn = 0;
+    OnGameBegan?.Invoke(this, game, board, turnOrder.ToArray());
   }
 
   public void EndGame(Side winner)

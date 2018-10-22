@@ -11,7 +11,18 @@ public class Tile : MonoBehaviour
   public int row;
   public int column;
   /// <value>Who occupies the tile, or null if tile is unoccupied. </value>
-  public Piece piece;
+  public Piece piece
+  {
+    get { return _piece; }
+    set {
+      _piece = value;
+      OnPiecePlaced?.Invoke(this, value);
+    }
+  }
+  private Piece _piece;
+
+  public delegate void PiecePlacedEvent(Tile tile, Piece piece);
+  public event PiecePlacedEvent OnPiecePlaced;
 
   // Start is called before the first frame update
   void Start()
