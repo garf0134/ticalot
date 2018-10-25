@@ -36,6 +36,11 @@ public class Tile : MonoBehaviour
 
   }
 
+  private void OnCollisionStay(Collision collision)
+  {
+    GetComponent<Rigidbody>().Sleep();
+  }
+
 #if UNITY_EDITOR
   private Dictionary<string, string> registeredDebugStrings = new Dictionary<string, string>();
   public void RegisterDebug(string mode, string text)
