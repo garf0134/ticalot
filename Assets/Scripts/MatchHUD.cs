@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using System.ComponentModel;
 using TMPro;
@@ -75,11 +76,7 @@ public class MatchHUD : MonoBehaviour
 
   public void UpdateGameScore(Match m)
   {
-    string score = "";
-    foreach (var side in m.turnOrder)
-    {
-      score += string.Format("{0}-{1}", side.name, m.games[side]);
-    }
+    string score = string.Join(" | ", m.turnOrder.Select((Side s) => { return string.Format("{0}-{1}", s.name, m.games[s]); }));
     gameScore.text = score;
   }
 
