@@ -19,6 +19,16 @@ public class AIPlayer : PlayerBase
     public int[] run = new int[4];
     public int[] claimed = new int[4];
     public Tile tile;
+
+    public override string ToString()
+    {
+      return string.Format(
+        "Vertical-{0}/{1}\nHorizontal-{2}/{3}\nDiagTopDown-{4}/{5}\nDiagBotUp-{6}/{7}",
+        claimed[0], run[0],
+        claimed[1], run[1],
+        claimed[2], run[2],
+        claimed[3], run[3]);
+    }
   }
   RunInfo[,] longestRuns;
   RunInfo[,] opponentRuns;
@@ -41,22 +51,65 @@ public class AIPlayer : PlayerBase
     }
   }
 
-  private string LongestRunToString(Board.Direction d)
+  private string LongestRunToString(RunInfo[,] run)
   {
-    int directionAsInt = (int)d;
     StringBuilder builder = new StringBuilder();
-
-    for (int r = 0; r < longestRuns.GetLength(0); r++)
+    for (int d = 0; d < 4; d++)
     {
-      for (int c = 0; c < longestRuns.GetLength(1); c++)
+      string header = ((Board.Direction)d).ToString();
+      if (header.Length > 9)
       {
-        builder.AppendFormat("{0,-2}", longestRuns[r, c].run[(int)d]);
+        header = header.Substring(header.Length - 9, 9);
+      }
+      builder.AppendFormat("{0,-9}\t",  header);
+    }
+    builder.AppendLine();
+
+    for (int r = 0; r < run.GetLength(0); r++)
+    {
+      for (int d = 0; d < 4; d++)
+      {
+        for (int c = 0; c < run.GetLength(1); c++)
+        {
+          builder.AppendFormat("{0,-3}", run[r, c].run[(int)d]);
+        }
+
+        builder.Append("\t");
       }
       builder.AppendLine();
     }
     return builder.ToString();
   }
 
+  private string LongestClaimedToString(RunInfo[,] run)
+  {
+    StringBuilder builder = new StringBuilder();
+    for (int d = 0; d < 4; d++)
+    {
+      string header = ((Board.Direction)d).ToString();
+      if (header.Length > 9)
+      {
+        header = header.Substring(header.Length - 9, 9);
+      }
+      builder.AppendFormat("{0,-9}\t", header);
+    }
+    builder.AppendLine();
+
+    for (int r = 0; r < run.GetLength(0); r++)
+    {
+      for (int d = 0; d < 4; d++)
+      {
+        for (int c = 0; c < run.GetLength(1); c++)
+        {
+          builder.AppendFormat("{0,-3}", run[r, c].claimed[(int)d]);
+        }
+        builder.Append('\t');
+      }
+      builder.AppendLine();
+    }
+    return builder.ToString();
+  }
+  
   protected void OnGameBegan(Match m, int game, Board b, Side[] sides)
   {
     longestRuns = new RunInfo[m.board.rows, m.board.cols];
@@ -81,11 +134,7 @@ public class AIPlayer : PlayerBase
       }
     }
 
-    string horizontalRepresentation = LongestRunToString(Board.Direction.Horizontal);
-    string verticalRepresentation = LongestRunToString(Board.Direction.Vertical);
-    string diagonalTopDownRepresentation = LongestRunToString(Board.Direction.Diagonal_TopDown);
     // Handle diagonals runs from the left side 
-    string diagonalBottomUpRepresentation = LongestRunToString(Board.Direction.Diagonal_BottomUp);
     for (int r = 0; r < m.board.rows; r++)
     {
       int c = 0, k = r;
@@ -118,50 +167,8 @@ public class AIPlayer : PlayerBase
         runs[m.board.rows - r - 1, k].run[(int)Board.Direction.Diagonal_TopDown] = sum;
         k++;
         r--;
-
-        diagonalBottomUpRepresentation = LongestRunToString(Board.Direction.Diagonal_BottomUp);
-        diagonalTopDownRepresentation = LongestRunToString(Board.Direction.Diagonal_TopDown);
       }
     }
-  }
-
-  /// <summary>
-  /// A callback used to both signal that the scan through a 2-dimensional data set is finished as 
-  /// well as providing write access to the underlying data in the 3rd dimension.
-  /// </summary>
-  /// <param name="count">The writeable count for the index given in the call to <see cref="Scan(int[,,], (int, int), (int, int), int, ScanCallback)"/></param>
-  /// <returns>True if the end condition was encountered. False, if the scan should continue.</returns>
-  private delegate bool ScanCallback(RunInfo info, int index);
-
-  /// <summary>
-  /// Scans through 2 of the 3 dimensions of a model storing an array of integers in the third dimension. This
-  /// array represents the longest run of empty or consecutive pieces owned by the given Side at a given coordinate
-  /// and in one of the four directions supported by the code.
-  /// </summary>
-  /// <param name="model">The 3-dimensional array of an integer run count sum per 2D coordinates, and a direction </param>
-  /// <param name="pos">The 2-dimensional coordinate to start scanning from</param>
-  /// <param name="step">The 2-dimensional vector to step by. Usual values are -1, 0 or 1</param>
-  /// <param name="index">The index into the third dimension <see cref="Board.Direction"/></param>
-  /// <param name="callback">A callback to signal the stop of the scan.</param>
-  /// <returns></returns>
-  private List<RunInfo> Scan(RunInfo[,] model, (int, int) pos, (int, int) step, int index, ScanCallback scanCallback)
-  {
-    List<RunInfo> ret = new List<RunInfo>();
-    (int, int) cursor = pos;
-    while (cursor.Item1 >= 0 && cursor.Item1 < model.GetLength(0) &&
-      cursor.Item2 >= 0 && cursor.Item2 < model.GetLength(1))
-    {
-      ret.Add(model[cursor.Item1, cursor.Item2]);
-
-      if (model[cursor.Item1, cursor.Item2].run[index] < 1)
-      {
-        break;
-      }
-      cursor.Item1 += step.Item1;
-      cursor.Item2 += step.Item2;
-    }
-
-    return ret;
   }
 
   /// <summary>
@@ -179,64 +186,135 @@ public class AIPlayer : PlayerBase
 
     if (p.side == side)
     {
-      UpdateRuns(t, p.side, opponentRuns);
+      // We've made a move, update the runs in our opponent's model
+      UpdateRuns(t, opponentRuns);
+      // But update the claims in our model
+      UpdateClaims(t, p.side, longestRuns);
+
     }
-    else
+    else //if (p.side == opponent)
     {
-      UpdateRuns(t, p.side, longestRuns);
+      // The opponent has made a move, update our model
+      UpdateRuns(t, longestRuns);
+      // But update the claims in our opponent's model
+      UpdateClaims(t, p.side, opponentRuns);
     }
+
+#if UNITY_EDITOR
+    foreach (RunInfo runInfo in longestRuns)
+    {
+      runInfo.tile?.RegisterDebug("AI Runs", runInfo.ToString());
+    }
+    foreach (RunInfo runInfo in opponentRuns)
+    {
+      runInfo.tile?.RegisterDebug("AI Opponent Runs", runInfo.ToString());
+    }
+
+    for (int r = 0; r < match.board.rows; r++)
+    {
+      for (int c = 0; c < match.board.cols; c++)
+      {
+        match.board[r, c].RegisterDebug("AI Score", ScoreDescription(match.board[r, c]).ToString());
+      }
+    }
+#endif
   }
 
-  private void UpdateRuns(Tile t, Side focusSide, RunInfo[,] runs)
+  /// <summary>
+  /// Scans through 2 of the 3 dimensions of a model storing an array of integers in the third dimension. This
+  /// array represents the longest run of empty or consecutive pieces owned by the given Side at a given coordinate
+  /// and in one of the four directions supported by the code.
+  /// </summary>
+  /// <param name="model">The 3-dimensional array of an integer run count sum per 2D coordinates, and a direction </param>
+  /// <param name="pos">The 2-dimensional coordinate to start scanning from</param>
+  /// <param name="step">The 2-dimensional vector to step by. Usual values are -1, 0 or 1</param>
+  /// <param name="index">The index into the third dimension <see cref="Board.Direction"/></param>
+  /// <param name="callback">A callback to signal the stop of the scan.</param>
+  /// <returns></returns>
+  private List<RunInfo> Scan(RunInfo[,] model, (int, int) pos, (int, int) step, int index)
+  {
+    List<RunInfo> ret = new List<RunInfo>();
+    (int, int) cursor = pos;
+    while (cursor.Item1 >= 0 && cursor.Item1 < model.GetLength(0) &&
+      cursor.Item2 >= 0 && cursor.Item2 < model.GetLength(1) &&
+      model[cursor.Item1, cursor.Item2].run[index] > 0)
+    {
+      ret.Add(model[cursor.Item1, cursor.Item2]);
+      cursor.Item1 += step.Item1;
+      cursor.Item2 += step.Item2;
+    }
+
+    return ret;
+  }
+  private void UpdateClaims(Tile t, Side s, RunInfo[,] runs)
+  {
+    // Horizontal
+    int direction = (int)Board.Direction.Horizontal;
+    var span = Scan(runs, (t.row, t.column), (0, -1), direction).
+      Concat(Scan(runs, (t.row, t.column + 1), (0, 1), direction)).ToList();
+    var numClaimed = span.Count((RunInfo runInfo) => runInfo.tile?.piece?.side == s);
+    foreach (var runInfo in span) { runInfo.claimed[direction] = numClaimed; }
+
+    // Vertical
+    direction = (int)Board.Direction.Vertical;
+    span = Scan(runs, (t.row, t.column), (-1, 0), direction).
+      Concat(Scan(runs, (t.row + 1, t.column), (1, 0), (int)Board.Direction.Vertical)).ToList();
+    numClaimed = span.Count((RunInfo runInfo) => runInfo.tile?.piece?.side == s);
+    foreach (var runInfo in span) {  runInfo.claimed[direction] = numClaimed; }
+
+    // Diagonal_TopDown
+    direction = (int)Board.Direction.Diagonal_TopDown;
+    span = Scan(runs, (t.row, t.column), (-1, -1), direction).
+      Concat(Scan(runs, (t.row + 1, t.column + 1), (1, 1), direction)).ToList();
+    numClaimed = span.Count((RunInfo runInfo) => runInfo.tile?.piece?.side == s);
+    foreach (var runInfo in span) {  runInfo.claimed[direction] = numClaimed; }
+
+    // Diagonal_BottomUp
+    direction = (int)Board.Direction.Diagonal_BottomUp;
+    span = Scan(runs, (t.row, t.column), (1, -1), direction)
+      .Concat(Scan(runs, (t.row - 1, t.column + 1), (-1, 1), direction)).ToList();
+    numClaimed = span.Count((RunInfo runInfo) => runInfo.tile?.piece?.side == s);
+    foreach (var runInfo in span) {  runInfo.claimed[direction] = numClaimed; }
+  }
+
+  private void UpdateRuns(Tile t, RunInfo[,] runs)
   {
     runs[t.row, t.column].run[(int)Board.Direction.Horizontal] = 0;
     runs[t.row, t.column].run[(int)Board.Direction.Vertical] = 0;
     runs[t.row, t.column].run[(int)Board.Direction.Diagonal_BottomUp] = 0;
     runs[t.row, t.column].run[(int)Board.Direction.Diagonal_TopDown] = 0;
 
-    string longestRunRepresentation = LongestRunToString(Board.Direction.Horizontal);
-
-    ScanCallback countAnyAvailable = (RunInfo runInfo, int index) => runInfo.run[index] < 1;
-
     // Horizontal
     int direction = (int)Board.Direction.Horizontal;
-    var span = Scan(runs, (t.row, t.column - 1), (0, -1), direction, countAnyAvailable);
-    var numClaimed = span.Count((RunInfo runInfo) => runInfo.tile?.piece?.side == side);
-    foreach (var runInfo in span) { runInfo.run[direction] = span.Count; runInfo.claimed[direction] = numClaimed; }
+    var span = Scan(runs, (t.row, t.column - 1), (0, -1), direction);
+    foreach (var runInfo in span) { runInfo.run[direction] = span.Count;  }
 
-    span = Scan(runs, (t.row, t.column + 1), (0, 1), direction, countAnyAvailable);
-    numClaimed = span.Count((RunInfo runInfo) => runInfo.tile?.piece?.side == side);
-    foreach (var runInfo in span) { runInfo.run[direction] = span.Count; runInfo.claimed[direction] = numClaimed; }
+    span = Scan(runs, (t.row, t.column + 1), (0, 1), direction);    
+    foreach (var runInfo in span) { runInfo.run[direction] = span.Count;  }
 
     // Vertical
     direction = (int)Board.Direction.Vertical;
-    span = Scan(runs, (t.row - 1, t.column), (-1, 0), direction, countAnyAvailable);
-    numClaimed = span.Count((RunInfo runInfo) => runInfo.tile?.piece?.side == side);
-    foreach (var runInfo in span) { runInfo.run[direction] = span.Count; runInfo.claimed[direction] = numClaimed; }
+    span = Scan(runs, (t.row - 1, t.column), (-1, 0), direction);
+    foreach (var runInfo in span) { runInfo.run[direction] = span.Count;  }
 
-    span = Scan(runs, (t.row + 1, t.column), (1, 0), (int)Board.Direction.Vertical, countAnyAvailable);
-    numClaimed = span.Count((RunInfo runInfo) => runInfo.tile?.piece?.side == side);
-    foreach (var runInfo in span) { runInfo.run[direction] = span.Count; runInfo.claimed[direction] = numClaimed; }
+    span = Scan(runs, (t.row + 1, t.column), (1, 0), (int)Board.Direction.Vertical);
+    foreach (var runInfo in span) { runInfo.run[direction] = span.Count;  }
 
     // Diagonal_TopDown
     direction = (int)Board.Direction.Diagonal_TopDown;
-    span = Scan(runs, (t.row - 1, t.column - 1), (-1, -1), direction, countAnyAvailable);
-    numClaimed = span.Count((RunInfo runInfo) => runInfo.tile?.piece?.side == side);
-    foreach (var runInfo in span) { runInfo.run[direction] = span.Count; runInfo.claimed[direction] = numClaimed; }
+    span = Scan(runs, (t.row - 1, t.column - 1), (-1, -1), direction);
+    foreach (var runInfo in span) { runInfo.run[direction] = span.Count;  }
 
-    span = Scan(runs, (t.row + 1, t.column + 1), (1, 1), direction, countAnyAvailable);
-    numClaimed = span.Count((RunInfo runInfo) => runInfo.tile?.piece?.side == side);
-    foreach (var runInfo in span) { runInfo.run[direction] = span.Count; runInfo.claimed[direction] = numClaimed; }
+    span = Scan(runs, (t.row + 1, t.column + 1), (1, 1), direction);
+    foreach (var runInfo in span) { runInfo.run[direction] = span.Count;  }
 
     // Diagonal_BottomUp
     direction = (int)Board.Direction.Diagonal_BottomUp;
-    span = Scan(runs, (t.row + 1, t.column - 1), (1, -1), direction, countAnyAvailable);
-    numClaimed = span.Count((RunInfo runInfo) => runInfo.tile?.piece?.side == side);
-    foreach (var runInfo in span) { runInfo.run[direction] = span.Count; runInfo.claimed[direction] = numClaimed; }
+    span = Scan(runs, (t.row + 1, t.column - 1), (1, -1), direction);
+    foreach (var runInfo in span) { runInfo.run[direction] = span.Count;  }
 
-    span = Scan(runs, (t.row - 1, t.column + 1), (-1, 1), direction, countAnyAvailable);
-    numClaimed = span.Count((RunInfo runInfo) => runInfo.tile?.piece?.side == side);
-    foreach (var runInfo in span) { runInfo.run[direction] = span.Count; runInfo.claimed[direction] = numClaimed; }
+    span = Scan(runs, (t.row - 1, t.column + 1), (-1, 1), direction);
+    foreach (var runInfo in span) { runInfo.run[direction] = span.Count;  }
   }
 
   public override IEnumerator Play(Board b, Ruleset ruleset)
@@ -287,7 +365,6 @@ public class AIPlayer : PlayerBase
 
   private Tile RandomStrategy(Board b, List<(int, int)> validMoves)
   {
-
     var randomeTileCoords = validMoves[UnityEngine.Random.Range(0, validMoves.Count)];
     Tile chosenMove = b[randomeTileCoords.Item1, randomeTileCoords.Item2];
     return chosenMove;
@@ -295,7 +372,7 @@ public class AIPlayer : PlayerBase
 
   private Tile NormalStrategy(Board b, List<(int, int)> validMoves)
   {
-    List<(int,Tile)> scores = new List<(int, Tile)>();
+    List<(int, Tile)> scores = new List<(int, Tile)>();
 
     foreach (var coord in validMoves)
     {
@@ -308,20 +385,15 @@ public class AIPlayer : PlayerBase
 
           // We value potential spots not yet taken, spots that have a high number of claimed
           // tiles (ours or theirs)
-          int score = 0;
-          for (int i = 0; i < System.Enum.GetValues(typeof(Board.Direction)).Length; i++)
-          {
-            score += runInfo.run[i] + runInfo.claimed[i] + opponentRunInfo.claimed[i];
-          }
-          scores.Add((score, t));
+          scores.Add((Score(t), t));
           break;
       }
     }
 
     int highestScore = scores
       .OrderBy(((int, Tile) pair) => pair.Item1, Comparer<int>.Create((int left, int right) => right.CompareTo(left)))
-      .Select( ((int,Tile) pair) => pair.Item1)
-      .First() ;
+      .Select(((int, Tile) pair) => pair.Item1)
+      .First();
     List<Tile> highestTiles = scores
       .Where(((int, Tile) pair) => pair.Item1 == highestScore)
       .Select(((int, Tile) pair) => pair.Item2)
@@ -334,6 +406,75 @@ public class AIPlayer : PlayerBase
     }
     return chosenMove;
   }
+
+  private int Score(Tile t)
+  {
+    int score = 0;
+    RunInfo runInfo = longestRuns[t.row, t.column];
+    RunInfo opponentRunInfo = opponentRuns[t.row, t.column];
+    int N = match.ruleset.consecutiveTiles;
+
+    for (int i = 0; i < System.Enum.GetValues(typeof(Board.Direction)).Length; i++)
+    {
+      // If there's no chance to finish the run don't consider it
+      int directionScore = 0;
+      int delta = runInfo.run[i] - runInfo.claimed[i];
+      if (opponentRunInfo.claimed[i] >= (N - 1))
+      {
+        directionScore = 4 * opponentRunInfo.claimed[i];
+      }
+      else if (delta >= 1 && runInfo.run[i] >= match.ruleset.consecutiveTiles)
+      {
+        directionScore += runInfo.run[i] + 3*runInfo.claimed[i];
+      }
+      
+      score += directionScore;
+    }
+
+    return score;
+  }
+
+#if UNITY_EDITOR
+  private string ScoreDescription(Tile t)
+  {
+    StringBuilder ret = new StringBuilder();
+    RunInfo runInfo = longestRuns[t.row, t.column];
+    RunInfo opponentRunInfo = opponentRuns[t.row, t.column];
+    int N = match.ruleset.consecutiveTiles;
+    int score = 0;
+    for (int i = 0; i < 4; i++)
+    {
+      ret.AppendFormat("  {0}-", ((Board.Direction)i).ToString());
+      if (opponentRunInfo.claimed[i] >= (N - 1))
+      {
+        ret.AppendFormat(" + 4*{0}", opponentRunInfo.claimed[i]);
+        score += 4 * opponentRunInfo.claimed[i];
+      }
+      else
+      {
+        int delta = runInfo.run[i] - runInfo.claimed[i];
+        if (delta < 1)
+        {
+          ret.Append("<0>");
+        }
+        else if (runInfo.run[i] < match.ruleset.consecutiveTiles)
+        {
+          ret.Append("[0]");
+        }
+
+        else
+        {
+          int directionScore = runInfo.run[i] + 3 * runInfo.claimed[i];
+          ret.AppendFormat("{0} + {1}*{2}", runInfo.run[i], 3, runInfo.claimed[i]);
+          score += directionScore;
+        }
+      }
+      ret.AppendLine();
+    }
+    ret.AppendFormat("Sum: {0}", score);
+    return ret.ToString();
+  }
+#endif
 
   protected override void OnTurnBegan(Match m, int turn, Side[] sides)
   {

@@ -17,6 +17,12 @@ public class HUD : MonoBehaviour
   public GameObject tilePrefab;
   public GameObject playerPrefab;
 
+#if UNITY_EDITOR
+  public string[] modes = new string[0];
+  public string debugMode;
+  public TMP_Text debugText;
+#endif
+
   public Color tileHoverColor;
   public Color tileHoverIllegalMoveColor;
   public Color tileNormalColor;
@@ -250,5 +256,49 @@ public class HUD : MonoBehaviour
     {
       return;
     }
+
+#if UNITY_EDITOR
+    foreach (string mode in modes)
+    {
+      if (Input.GetButtonDown(mode))
+      {
+        debugMode = (debugMode != null && debugMode.Length > 0 && debugMode == mode) ? null : mode;
+      }
+    }
+
+    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+    RaycastHit hit;
+    if (Physics.Raycast(ray, out hit))
+    {
+      Tile t = hit.collider.GetComponentInParent<Tile>();
+      if (t != null)
+      {
+        if (debugMode != null && debugMode.Length > 0)
+        {
+          string textToDisplay = t.RegisteredDebugText(debugMode);
+          if (textToDisplay != null)
+          {
+            debugText.text = string.Format("{0}\n{1}\n", debugMode, t.RegisteredDebugText(debugMode));
+            MeshRenderer meshRenderer = t.GetComponent<MeshRenderer>();
+
+            Vector3 screenPoint = Camera.main.WorldToScreenPoint(t.transform.position);
+            RectTransform parent = debugText.rectTransform.parent as RectTransform;
+            parent.anchoredPosition = new Vector2(screenPoint.x, screenPoint.y);
+            parent.gameObject.SetActive(true);
+            debugText.gameObject.SetActive(true);
+          }
+          else
+          {
+            debugText.gameObject.SetActive(false);
+          }
+        }
+        else
+        {
+          debugText.gameObject.SetActive(false);
+        }
+      }
+    }
+
+#endif
   }
 }

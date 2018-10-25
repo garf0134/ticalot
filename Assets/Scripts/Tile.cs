@@ -35,4 +35,19 @@ public class Tile : MonoBehaviour
   {
 
   }
+
+#if UNITY_EDITOR
+  private Dictionary<string, string> registeredDebugStrings = new Dictionary<string, string>();
+  public void RegisterDebug(string mode, string text)
+  {
+    registeredDebugStrings[mode] = text;
+  }
+
+  public string RegisteredDebugText(string mode)
+  {
+    string ret = null;
+    registeredDebugStrings.TryGetValue(mode, out ret);
+    return ret;
+  }
+#endif
 }
