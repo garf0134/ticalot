@@ -21,6 +21,7 @@ public class MatchHUD : MonoBehaviour
   {
     canvasGroup.alpha = 0;
     canvasGroup.interactable = false;
+    turnInstructions.enabled = false;
   }
 
   // Update is called once per frame
