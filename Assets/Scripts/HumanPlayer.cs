@@ -4,18 +4,14 @@ using UnityEngine;
 
 public class HumanPlayer : PlayerBase
 {
-  // Start is called before the first frame update
-  protected override void Start()
-  {
-
-  }
-
-  // Update is called once per frame
-  protected override void Update()
-  {
-
-  }
-
+  /// <summary>
+  /// The concrete implementation starts the <see cref="Play(Board, Ruleset)"/>
+  /// coroutine which just waits for the human player to click on a valid tile
+  /// on the board.
+  /// </summary>
+  /// <param name="m">The current match being played</param>
+  /// <param name="turn">The current turn</param>
+  /// <param name="sides">The sides involved in the match. <code>sides[turn]</code> is the current side</param>
   protected override void OnTurnBegan(Match m, int turn, Side[] sides)
   {
     if (sides[turn] == side)
@@ -24,6 +20,13 @@ public class HumanPlayer : PlayerBase
     }
   }
 
+  /// <summary>
+  /// Waits for the player to click on a tile that is valid and then registers 
+  /// a move with the board.
+  /// </summary>
+  /// <param name="b">The board where the current game is being played</param>
+  /// <param name="r">The ruleset of the current game being played</param>
+  /// <returns></returns>
   public override IEnumerator Play(Board b, Ruleset r)
   {
     while (true)

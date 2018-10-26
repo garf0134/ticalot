@@ -4,22 +4,45 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-
+/// <summary>
+/// The AIPlayer class encapsulates the code necessary for an AI that 
+/// can make decisions about moves. There are two strategies to pick from
+/// Normal and PureRandom. The normal strategy will build scores from 
+/// looking at how many consecutive tiles can be played in any direction. The
+/// higher the score, the better move a tile becomes.
+/// </summary>
 public class AIPlayer : PlayerBase
 {
+  /// <summary>
+  /// The strategy the AI Player will use to choose moves
+  /// </summary>
   public enum Strategy
   {
     PureRandom,
     Normal
   }
 
+  /// <summary> The strategy selected for the AI player </summary>
   public Strategy strategy;
+
+  /// <summary>
+  /// Tracks the number of consecutive tiles available to a side in any of the 
+  /// four directions specified in <seealso cref="Board.Direction"/>. The class
+  /// also tracks the number of claimed tiles in any run.
+  /// </summary>
   public class RunInfo
   {
+    /// <summary>The number of consecutive tiles in a direction</summary>
     public int[] run = new int[4];
+    /// <summary>The number of claimed tiles in a direction</summary>
     public int[] claimed = new int[4];
+    /// <summary>The tile at the center of the run</summary>
     public Tile tile;
 
+    /// <summary>
+    /// Overrides the ToString() method to return a full summary of the state of the RunInfo object
+    /// </summary>
+    /// <returns>A string representing the state of the RunInfo object</returns>
     public override string ToString()
     {
       return string.Format(
@@ -30,9 +53,15 @@ public class AIPlayer : PlayerBase
         claimed[3], run[3]);
     }
   }
-  RunInfo[,] longestRuns;
-  RunInfo[,] opponentRuns;
+  /// <summary> A two dimensional array allocated to store runs for the AI from each tile on the board </summary>
+  private RunInfo[,] longestRuns;
+  /// <summary> A two dimensional array allocated to store runs for the AI's opponent from each tile on the board </summary>
+  private RunInfo[,] opponentRuns;
 
+  /// <summary>
+  /// Sets the match that the AI player is playing in
+  /// </summary>
+  /// <param name="m">The match that the player is playing in</param>
   protected override void SetMatch(Match m)
   {
     base.SetMatch(m);
@@ -40,6 +69,13 @@ public class AIPlayer : PlayerBase
     m.OnGameEnded += OnGameEnded;
   }
 
+  /// <summary>
+  /// A hook for a match's OnGameEnded event. Allows the AI player to detach
+  /// from every tile's OnPiecePlaced event.
+  /// </summary>
+  /// <param name="m">The match that the game that just ended is a part of</param>
+  /// <param name="b">The board that the game was played on</param>
+  /// <param name="winner">The side that was the winner of the game that just ended</param>
   private void OnGameEnded(Match m, Board b, Side winner)
   {
     for (int r = 0; r < b.rows; r++)
@@ -50,121 +86,75 @@ public class AIPlayer : PlayerBase
       }
     }
   }
-
-  private string LongestRunToString(RunInfo[,] run)
-  {
-    StringBuilder builder = new StringBuilder();
-    for (int d = 0; d < 4; d++)
-    {
-      string header = ((Board.Direction)d).ToString();
-      if (header.Length > 9)
-      {
-        header = header.Substring(header.Length - 9, 9);
-      }
-      builder.AppendFormat("{0,-9}\t",  header);
-    }
-    builder.AppendLine();
-
-    for (int r = 0; r < run.GetLength(0); r++)
-    {
-      for (int d = 0; d < 4; d++)
-      {
-        for (int c = 0; c < run.GetLength(1); c++)
-        {
-          builder.AppendFormat("{0,-3}", run[r, c].run[(int)d]);
-        }
-
-        builder.Append("\t");
-      }
-      builder.AppendLine();
-    }
-    return builder.ToString();
-  }
-
-  private string LongestClaimedToString(RunInfo[,] run)
-  {
-    StringBuilder builder = new StringBuilder();
-    for (int d = 0; d < 4; d++)
-    {
-      string header = ((Board.Direction)d).ToString();
-      if (header.Length > 9)
-      {
-        header = header.Substring(header.Length - 9, 9);
-      }
-      builder.AppendFormat("{0,-9}\t", header);
-    }
-    builder.AppendLine();
-
-    for (int r = 0; r < run.GetLength(0); r++)
-    {
-      for (int d = 0; d < 4; d++)
-      {
-        for (int c = 0; c < run.GetLength(1); c++)
-        {
-          builder.AppendFormat("{0,-3}", run[r, c].claimed[(int)d]);
-        }
-        builder.Append('\t');
-      }
-      builder.AppendLine();
-    }
-    return builder.ToString();
-  }
-  
+  /// <summary>
+  /// A hook for a match's OnGameBegan event. Allows the AI player to initialize
+  /// the RunInfo two-dimensional arrays.
+  /// </summary>
+  /// <param name="m">The match the new game belongs to</param>
+  /// <param name="game">The game index of the game about to begin</param>
+  /// <param name="b">The board that the game index is being played on</param>
+  /// <param name="sides">The sides playing the game</param>
   protected void OnGameBegan(Match m, int game, Board b, Side[] sides)
   {
     longestRuns = new RunInfo[m.board.rows, m.board.cols];
     opponentRuns = new RunInfo[m.board.rows, m.board.cols];
 
-    InitializeRuns(m, b, longestRuns);
-    InitializeRuns(m, b, opponentRuns);
+    InitializeRuns(b, longestRuns);
+    InitializeRuns(b, opponentRuns);
   }
 
-  private void InitializeRuns(Match m, Board b, RunInfo[,] runs)
+  /// <summary>
+  /// Set each direction of each tile to the number of consecutive tiles
+  /// available in that direction
+  /// </summary>
+  /// <param name="b">The board that all tiles belong to</param>
+  /// <param name="runs">The two dimensional array corresponding to a board's tile layout.</param>
+  private void InitializeRuns(Board b, RunInfo[,] runs)
   {
     // Handle vertical and horizontal runs
-    for (int r = 0; r < m.board.rows; r++)
+    for (int r = 0; r < b.rows; r++)
     {
-      for (int c = 0; c < m.board.cols; c++)
+      for (int c = 0; c < b.cols; c++)
       {
         runs[r, c] = new RunInfo();
-        runs[r, c].run[(int)Board.Direction.Horizontal] = m.board.rows;
-        runs[r, c].run[(int)Board.Direction.Vertical] = m.board.cols;
-        runs[r, c].tile = m.board[r, c];
+        runs[r, c].run[(int)Board.Direction.Horizontal] = b.rows;
+        runs[r, c].run[(int)Board.Direction.Vertical] = b.cols;
+        runs[r, c].tile = b[r, c];
         b[r, c].OnPiecePlaced += OnPiecePlaced;
       }
     }
 
     // Handle diagonals runs from the left side 
-    for (int r = 0; r < m.board.rows; r++)
+    for (int r = 0; r < b.rows; r++)
     {
       int c = 0, k = r;
       int sum = 0;
-      while (k-- >= 0 && c++ < m.board.cols) { sum++; }
+      while (k-- >= 0 && c++ < b.cols) { sum++; }
       c = 0;
       k = r;
-      while (k >= 0 && c < m.board.cols)
+      while (k >= 0 && c < b.cols)
       {
         runs[k, c].run[(int)Board.Direction.Diagonal_BottomUp] = sum;
-        runs[m.board.rows - k - 1, c].run[(int)Board.Direction.Diagonal_TopDown] = sum;
+        runs[b.rows - k - 1, c].run[(int)Board.Direction.Diagonal_TopDown] = sum;
         k--;
         c++;
       }
     }
 
     // Handle diagonal runs from the bottom edge
-    for (int c = 0; c < m.board.cols; c++)
+    for (int c = 0; c < b.cols; c++)
     {
-      int r = m.board.rows - 1;
+      int r = b.rows - 1;
       int k = c;
       int sum = 0;
-      while (r-- >= 0 && k++ < m.board.cols) { sum++; }
+      while (r-- >= 0 && k++ < b.cols) { sum++; }
 
-      r = m.board.rows - 1;
+      r = b.rows - 1;
       k = c;
-      while (r >= 0 && k < m.board.cols)
+      while (r >= 0 && k < b.cols)
       {
         runs[r, k].run[(int)Board.Direction.Diagonal_BottomUp] = sum;
-        runs[m.board.rows - r - 1, k].run[(int)Board.Direction.Diagonal_TopDown] = sum;
+        runs[b.rows - r - 1, k].run[(int)Board.Direction.Diagonal_TopDown] = sum;
         k++;
         r--;
       }
@@ -221,16 +211,13 @@ public class AIPlayer : PlayerBase
   }
 
   /// <summary>
-  /// Scans through 2 of the 3 dimensions of a model storing an array of integers in the third dimension. This
-  /// array represents the longest run of empty or consecutive pieces owned by the given Side at a given coordinate
-  /// and in one of the four directions supported by the code.
+  /// Scans through the two dimensional array of the AI's working model of the game board.
   /// </summary>
-  /// <param name="model">The 3-dimensional array of an integer run count sum per 2D coordinates, and a direction </param>
+  /// <param name="model">The 2-dimensional array of RunInfo instances, each corresponding to a tile on the game board </param>
   /// <param name="pos">The 2-dimensional coordinate to start scanning from</param>
-  /// <param name="step">The 2-dimensional vector to step by. Usual values are -1, 0 or 1</param>
-  /// <param name="index">The index into the third dimension <see cref="Board.Direction"/></param>
-  /// <param name="callback">A callback to signal the stop of the scan.</param>
-  /// <returns></returns>
+  /// <param name="step">The 2-dimensional vector to step by. Usual values for the components are -1, 0 or 1</param>
+  /// <param name="index">The index of the direction to search in <see cref="Board.Direction"/></param>
+  /// <returns>Returns a list of tiles that were found in the scan</returns>
   private List<RunInfo> Scan(RunInfo[,] model, (int, int) pos, (int, int) step, int index)
   {
     List<RunInfo> ret = new List<RunInfo>();
@@ -246,6 +233,13 @@ public class AIPlayer : PlayerBase
 
     return ret;
   }
+
+  /// <summary>
+  /// Update the number of claimed tiles in the span for each direction for each tile.
+  /// </summary>
+  /// <param name="t">The tile where the scan starts</param>
+  /// <param name="s">The side we are updating claims for</param>
+  /// <param name="runs">The 2-dimensional array corresponding to the tiles of a game board</param>
   private void UpdateClaims(Tile t, Side s, RunInfo[,] runs)
   {
     // Horizontal
@@ -277,6 +271,12 @@ public class AIPlayer : PlayerBase
     foreach (var runInfo in span) {  runInfo.claimed[direction] = numClaimed; }
   }
 
+  /// <summary>
+  /// Update the count for each direction for the given tile with the number of
+  /// consecutive tiles unclaimed by the opponent.
+  /// </summary>
+  /// <param name="t">The tile to calculate the spans for</param>
+  /// <param name="runs">The 2-dimensional array that corresponds to the tiles of Board</param>
   private void UpdateRuns(Tile t, RunInfo[,] runs)
   {
     runs[t.row, t.column].run[(int)Board.Direction.Horizontal] = 0;
@@ -317,6 +317,14 @@ public class AIPlayer : PlayerBase
     foreach (var runInfo in span) { runInfo.run[direction] = span.Count;  }
   }
 
+  /// <summary>
+  /// The concrete implementation of the method that simulates the amount
+  /// of time it takes a human player to think about a move before calculating
+  /// the AI's move and registering it with the board.
+  /// </summary>
+  /// <param name="b">The board the game is being played on</param>
+  /// <param name="ruleset">The ruleset that governs the rules of the game</param>
+  /// <returns></returns>
   public override IEnumerator Play(Board b, Ruleset ruleset)
   {
     // Add human-like delay
@@ -363,6 +371,12 @@ public class AIPlayer : PlayerBase
     }
   }
 
+  /// <summary>
+  /// The random strategy picks a tile from the list of valid moves at random.
+  /// </summary>
+  /// <param name="b">The board that the game is played on</param>
+  /// <param name="validMoves">A list of row,column coordinates representing acceptable move choices</param>
+  /// <returns></returns>
   private Tile RandomStrategy(Board b, List<(int, int)> validMoves)
   {
     var randomeTileCoords = validMoves[UnityEngine.Random.Range(0, validMoves.Count)];
@@ -370,6 +384,12 @@ public class AIPlayer : PlayerBase
     return chosenMove;
   }
 
+  /// <summary>
+  /// The normal strategy picks a tile from the highest scoring tile in a list of valid moves
+  /// </summary>
+  /// <param name="b">The board that the game is played on</param>
+  /// <param name="validMoves">A list of row,column coordinates representing acceptable move choices</param>
+  /// <returns></returns>
   private Tile NormalStrategy(Board b, List<(int, int)> validMoves)
   {
     List<(int, Tile)> scores = new List<(int, Tile)>();
@@ -407,6 +427,11 @@ public class AIPlayer : PlayerBase
     return chosenMove;
   }
 
+  /// <summary>
+  /// Scores a tile, returning an integer representinga series of choices and summations
+  /// </summary>
+  /// <param name="t">The tile to calculate the score for</param>
+  /// <returns>The score of the tile</returns>
   private int Score(Tile t)
   {
     int score = 0;
@@ -435,6 +460,12 @@ public class AIPlayer : PlayerBase
   }
 
 #if UNITY_EDITOR
+  /// <summary>
+  /// BUilds a string with a detailed description of how the score is built for debugging purposes.
+  /// Only useful within the context of the Unity editor.
+  /// </summary>
+  /// <param name="t">The tile we are scoring</param>
+  /// <returns>The string representation of how the score was built in <see cref="Score(Tile)"/></returns>
   private string ScoreDescription(Tile t)
   {
     StringBuilder ret = new StringBuilder();
@@ -476,23 +507,19 @@ public class AIPlayer : PlayerBase
   }
 #endif
 
+  /// <summary>
+  /// The concrete implementation of <code>PlayerBase.OnTurnBegan</code>.
+  /// Starts a coroutine that starts and waits for the new coroutine to
+  /// finish.
+  /// </summary>
+  /// <param name="m">The match that is being played</param>
+  /// <param name="turn">The index of the current turn</param>
+  /// <param name="sides">The differetn sides of the match, <code>sides[turn]</code> is equivalent to the current side.</param>
   protected override void OnTurnBegan(Match m, int turn, Side[] sides)
   {
     if (sides[turn] == side)
     {
       StartCoroutine(Play(m.board, m.ruleset));
     }
-  }
-
-  // Start is called before the first frame update
-  protected override void Start()
-  {
-
-  }
-
-  // Update is called once per frame
-  protected override void Update()
-  {
-
   }
 }

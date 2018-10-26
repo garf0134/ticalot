@@ -4,18 +4,28 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 
+/// <summary>
+/// The interface to adjust side/player specific settings like AI/Human roles,
+/// icons, colors. Accessors for these values are are provided to the
+/// calling environment as a convenience.
+/// </summary>
 public class PlayerSettings : MonoBehaviour
 {
+  /// <summary> The UI reference to the asset used for the icon </summary>
   public Sprite sprite;
+  /// <summary> A toggle to enable/disable the side from participation in the match </summary>
   public Toggle sideEnabled;
+  /// <summary> A dropdown to select the Human, Random AI, Normal AI role for the side </summary>
   public Dropdown roleDropdown;
+  /// <summary> A dropdown to select the icon to be used for the side during the match</summary>
   public Dropdown iconDropdown;
+  /// <summary> A dropdown to select the color to be used for the side during the match </summary>
   public Dropdown colorDropdown;
 
-  private DropdownColorChoice[] selectableColors;
+  /// <summary> A set of colors read in from the Resources folder </summary>
   private ColorSet defaultSideColors;
 
-  // Start is called before the first frame update
+  /// <summary> Start is called before the first frame update </summary>
   void Start()
   {
     iconDropdown.ClearOptions();
@@ -49,21 +59,37 @@ public class PlayerSettings : MonoBehaviour
     colorDropdown.AddOptions(colorOptions);
   }
 
+  /// <summary>
+  /// Gets the color name of the currently selected color
+  /// </summary>
+  /// <returns>The currently selected name of the side</returns>
   public string SelectedName()
   {
     return colorDropdown.options[colorDropdown.value].text;
   }
 
+  /// <summary>
+  /// Gets the Color instance for the currently selected color
+  /// </summary>
+  /// <returns>The Color instance for the currently selected color</returns>
   public Color SelectedColor()
   {
     return colorDropdown.options[colorDropdown.value].image.texture.GetPixel(0, 0);
   }
 
+  /// <summary>
+  /// Gets the resource reference for the currently selected icon
+  /// </summary>
+  /// <returns>The resource reference for the currently selected icon</returns>
   public string SelectedIcon()
   {
     return iconDropdown.options[iconDropdown.value].text;
   }
 
+  /// <summary>
+  /// Gets the currently selected role
+  /// </summary>
+  /// <returns>The currently selected role</returns>
   public Side.Role SelectedRole()
   {
     string roleText = roleDropdown.options[roleDropdown.value].text;
@@ -77,6 +103,10 @@ public class PlayerSettings : MonoBehaviour
     return Side.Role.Human;
   }
 
+  /// <summary>
+  /// Gets the currently selected  AI strategy
+  /// </summary>
+  /// <returns>Returns the currently selected AI strategy</returns>
   public AIPlayer.Strategy SelectedAIRoleStrategy()
   {
     string roleText = roleDropdown.options[roleDropdown.value].text;
@@ -88,11 +118,5 @@ public class PlayerSettings : MonoBehaviour
       }
     }
     return AIPlayer.Strategy.Normal;
-  }
-
-  // Update is called once per frame
-  void Update()
-  {
-
   }
 }
