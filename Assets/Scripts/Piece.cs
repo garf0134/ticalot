@@ -7,5 +7,9 @@ using UnityEngine;
 /// </summary>
 public class Piece : MonoBehaviour
 {
+  /// <summary>
+  /// The side that the piece belongs to. Set at instantiation.
+  /// </summary>
+  /// <value>the side that the piece belongs to</value>
   public Side side { get; set; }
 }
