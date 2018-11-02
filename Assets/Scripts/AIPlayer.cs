@@ -96,8 +96,8 @@ public class AIPlayer : PlayerBase
   /// <param name="sides">The sides playing the game</param>
   protected void OnGameBegan(Match m, int game, Board b, Side[] sides)
   {
-    longestRuns = new RunInfo[m.board.rows, m.board.cols];
-    opponentRuns = new RunInfo[m.board.rows, m.board.cols];
+    longestRuns = new RunInfo[b.rows, b.cols];
+    opponentRuns = new RunInfo[b.rows, b.cols];
 
     InitializeRuns(b, longestRuns);
     InitializeRuns(b, opponentRuns);
@@ -506,20 +506,4 @@ public class AIPlayer : PlayerBase
     return ret.ToString();
   }
 #endif
-
-  /// <summary>
-  /// The concrete implementation of <code>PlayerBase.OnTurnBegan</code>.
-  /// Starts a coroutine that starts and waits for the new coroutine to
-  /// finish.
-  /// </summary>
-  /// <param name="m">The match that is being played</param>
-  /// <param name="turn">The index of the current turn</param>
-  /// <param name="sides">The differetn sides of the match, <code>sides[turn]</code> is equivalent to the current side.</param>
-  protected override void OnTurnBegan(Match m, int turn, Side[] sides)
-  {
-    if (sides[turn] == side)
-    {
-      StartCoroutine(Play(m.board, m.ruleset));
-    }
-  }
 }

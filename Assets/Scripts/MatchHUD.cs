@@ -110,7 +110,9 @@ public class MatchHUD : MonoBehaviour
   /// <param name="sides">The sides that are playing. The new side is <code>sides[turn]</code></param>
   private void OnTurnBegan(Match m, int turn, Side[] sides)
   {
+    turnInstructions.enabled = true;
     UpdateTurnInstructions(m);
+    //Debug.LogFormat("Starting {0}'s turn of game {1}", sides[turn].name, m.game);
   }
 
   /// <summary>
@@ -124,6 +126,7 @@ public class MatchHUD : MonoBehaviour
   private void OnTurnEnded(Match m, int turn, Side[] sides)
   {
     turnInstructions.enabled = false;
+    //Debug.LogFormat("Ending {0}'s of game {1}", sides[turn].name, m.game);
   }
 
   /// <summary>
@@ -167,6 +170,5 @@ public class MatchHUD : MonoBehaviour
         turnInstructions.text = string.Format("<sprite name=\"{0}\"> {1} Team's Turn.\nPlease wait", s.iconName, s.name);
         break;
     }
-    turnInstructions.enabled = true;
   }
 }
