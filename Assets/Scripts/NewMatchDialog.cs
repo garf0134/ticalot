@@ -41,6 +41,15 @@ public class NewMatchDialog : MonoBehaviour
   public event NewMatchEvent OnNewMatch;
 
   /// <summary>
+  /// A delegate for listeners of UI animation events
+  /// </summary>
+  public delegate void AnimationEvent();
+  /// <summary>The show animation has finished</summary>
+  public event AnimationEvent OnShowFinished;
+  /// <summary>The hide animation has finished</summary>
+  public event AnimationEvent OnHideFinished;
+
+  /// <summary>
   /// The Unity initialization hook.
   /// Populates playerSettings, winConditions and movementRules
   /// Sets up the validators for the text input fields
@@ -217,7 +226,7 @@ public class NewMatchDialog : MonoBehaviour
     }
 
     int newMaxGames = int.Parse(builder.ToString());
-    return (newMaxGames > 0 && newMaxGames <= int.Parse(maxGames.text)) ? addedChar : '\0';
+    return (newMaxGames > 0 && newMaxGames >= int.Parse(gamesToWin.text)) ? addedChar : '\0';
   }
 
   /// <summary>
@@ -229,7 +238,6 @@ public class NewMatchDialog : MonoBehaviour
     Animator animator = GetComponent<Animator>();
     animator.SetTrigger("Show");
 
-    Destroy(r?.m?.gameObject);
     r = null;
   }
 
@@ -237,9 +245,15 @@ public class NewMatchDialog : MonoBehaviour
   /// A Unity animation hook for when the show animation has finished.
   /// Used to create a new ruleset.
   /// </summary>
-  public void OnShowFinished()
+  public void ShowFinished()
   {
+    OnShowFinished?.Invoke();
     r = ScriptableObject.CreateInstance<Ruleset>();
+    r.rows = int.Parse(rows.text);
+    r.cols = int.Parse(columns.text);
+    r.consecutiveTiles = int.Parse(matchN.text);
+    r.maxGames = int.Parse(maxGames.text);
+    r.gamesToWin = int.Parse(gamesToWin.text);
   }
 
   /// <summary>
@@ -291,6 +305,7 @@ public class NewMatchDialog : MonoBehaviour
   /// </summary>
   public void Hide()
   {
+    Debug.LogFormat("Someone called Hide()");
     Animator animator = GetComponent<Animator>();
     animator.SetTrigger("Hide");
   }
@@ -303,8 +318,10 @@ public class NewMatchDialog : MonoBehaviour
   /// dialog to the match.
   /// Finally, <see cref="OnNewMatch"/> is invoked
   /// </summary>
-  public void OnHideFinished()
+  public void HideFinished()
   {
+    OnHideFinished?.Invoke();
+
     GameObject matchInstance = Object.Instantiate<GameObject>(matchPrefab);
     Match m = matchInstance.GetComponent<Match>();
     foreach (PlayerSettings playerSetting in playerSettings)

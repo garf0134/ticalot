@@ -11,10 +11,9 @@ using UnityEngine;
 public abstract class PlayerBase : MonoBehaviour
 {
   /// <summary>
-  /// Used primarily to get access to the <see cref="HUD.UpdateHover(Tile)"/>
-  /// method used by the derived concrete classes.
+  /// The GameFlow that the match that this player is playing in belongs to.
   /// </summary>
-  public HUD hud;
+  public GameFlow gameFlow;
 
   /// <summary>
   /// The match that the player is playing in currently
@@ -67,9 +66,9 @@ public abstract class PlayerBase : MonoBehaviour
   /// <param name="r">The ruleset the current game is using</param>
   /// <returns></returns>
   public abstract IEnumerator Play(Board b, Ruleset r);
-  
+
   /// <summary>
-  /// A handler for the match's OnTurnBegan event. Derived classes must implement
+  /// A handler for the match's OnTurnBegan event. Derived classes may implement
   /// this method to begin the turn via <see cref="Play(Board, Ruleset)"/> but they
   /// may also use the method to take care of setup that happens at the start of 
   /// a turn.
@@ -78,7 +77,14 @@ public abstract class PlayerBase : MonoBehaviour
   /// <param name="turn">The current turn (a player's turn counts as a turn)</param>
   /// <param name="sides">The list of sides/teams. <code>sides[turn]</code> would be 
   /// the current side.</param>
-  protected abstract void OnTurnBegan(Match m, int turn, Side[] sides);
+  protected void OnTurnBegan(Match m, int turn, Side[] sides)
+  {
+    if (sides[turn] == side)
+    {
+      //Debug.LogFormat("Starting Player.Play coroutine");
+      StartCoroutine(Play(m.board, m.ruleset));
+    }
+  }
 
   /// <summary>
   /// Creates a game piece, storing information about which side its on and

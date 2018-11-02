@@ -5,22 +5,6 @@ using UnityEngine;
 public class HumanPlayer : PlayerBase
 {
   /// <summary>
-  /// The concrete implementation starts the <see cref="Play(Board, Ruleset)"/>
-  /// coroutine which just waits for the human player to click on a valid tile
-  /// on the board.
-  /// </summary>
-  /// <param name="m">The current match being played</param>
-  /// <param name="turn">The current turn</param>
-  /// <param name="sides">The sides involved in the match. <code>sides[turn]</code> is the current side</param>
-  protected override void OnTurnBegan(Match m, int turn, Side[] sides)
-  {
-    if (sides[turn] == side)
-    {
-      StartCoroutine(Play(m.board, m.ruleset));
-    }
-  }
-
-  /// <summary>
   /// Waits for the player to click on a tile that is valid and then registers 
   /// a move with the board.
   /// </summary>
@@ -29,6 +13,9 @@ public class HumanPlayer : PlayerBase
   /// <returns></returns>
   public override IEnumerator Play(Board b, Ruleset r)
   {
+    // Wait one frame for the other OnTurnBegan listeners to be called
+    yield return null;
+
     while (true)
     {
       Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -38,12 +25,11 @@ public class HumanPlayer : PlayerBase
         Tile t = hit.collider.GetComponentInParent<Tile>();
         if (t != null)
         {
-          hud.UpdateHover(t);
+          gameFlow.hud.UpdateHover(t);
 
           if (Input.GetMouseButtonDown(0))
           {
             Piece piece = CreatePiece();
-
             if (match.RegisterMove(side, t, piece))
             {
               piece.transform.SetParent(t.transform);
@@ -55,14 +41,12 @@ public class HumanPlayer : PlayerBase
             {
               DestroyImmediate(piece.gameObject);
             }
-
-
           }
         }
       }
       else
       {
-        hud.UpdateHover(null);
+        gameFlow.hud.UpdateHover(null);
       }
 
       yield return null;

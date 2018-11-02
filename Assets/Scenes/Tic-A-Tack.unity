@@ -229,28 +229,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a21c4d09540196e498290916a157c9c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canvasFader: {fileID: 240071987}
   newMatch: {fileID: 582587976}
   matchHUD: {fileID: 1817320556}
   title: {fileID: 1010922227}
-  piecePrefab: {fileID: 5678907512271741854, guid: 6a94dabdfbd02f442acf01dbcfa1a3e5,
-    type: 3}
-  tilePrefab: {fileID: 3302051712911341008, guid: 3ecaa4047fa6fbe47ad613d6d92c12df,
-    type: 3}
-  playerPrefab: {fileID: 0}
+  fader: {fileID: 240071987}
+  gameFlow: {fileID: 894705422}
   modes:
   - AI Runs
   - AI Opponent Runs
   - AI Score
   debugMode: 
   debugText: {fileID: 205285709}
-  tileHoverColor: {r: 0, g: 0.7933049, b: 1, a: 0.49803922}
-  tileHoverIllegalMoveColor: {r: 0.7169812, g: 0.116058685, b: 0.057493784, a: 1}
-  tileNormalColor: {r: 1, g: 1, b: 1, a: 0.49803922}
-  tileDimensions: 2
-  tileDropRate: 10
-  tileDestroyRate: 10
-  players: []
 --- !u!95 &51391595
 Animator:
   serializedVersion: 3
@@ -970,7 +959,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 240071985}
   m_Enabled: 1
-  m_Alpha: 0
+  m_Alpha: 0.0053022485
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
@@ -1837,7 +1826,7 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: 2
+  m_Text: 1
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
@@ -3075,6 +3064,86 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 877626469}
   m_CullTransparentMesh: 0
+--- !u!1 &894705419
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 894705421}
+  - component: {fileID: 894705420}
+  - component: {fileID: 894705422}
+  m_Layer: 0
+  m_Name: Game Flow
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!95 &894705420
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 894705419}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 9c038a41e654a0c4ebdf8d56d2d0a511, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!4 &894705421
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 894705419}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 586.5, y: 319.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &894705422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 894705419}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9f8066505a896f4cab60fe5822baf52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  match: {fileID: 0}
+  hud: {fileID: 51391594}
+  matchPrefab: {fileID: 2784359676226682677, guid: ebb1ca897873fb140bde783913c4aabc,
+    type: 3}
+  piecePrefab: {fileID: 5678907512271741854, guid: 6a94dabdfbd02f442acf01dbcfa1a3e5,
+    type: 3}
+  tilePrefab: {fileID: 3302051712911341008, guid: 3ecaa4047fa6fbe47ad613d6d92c12df,
+    type: 3}
+  boardPrefab: {fileID: 6299549123851385070, guid: 71aa1454473696f489a97b2efb4a67ce,
+    type: 3}
+  tileHoverColor: {r: 0, g: 0.9339623, b: 0.87741137, a: 0.85882354}
+  tileHoverIllegalMoveColor: {r: 0.9433962, g: 0.23374426, b: 0.057849795, a: 1}
+  tileNormalColor: {r: 0.8113208, g: 0.8113208, b: 0.8113208, a: 1}
+  tileDimensions: 2.1
+  tileDropRate: 5
+  tileDestroyRate: 20
+  players: []
 --- !u!1 &954516468
 GameObject:
   m_ObjectHideFlags: 0
@@ -4669,7 +4738,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 2
+  m_Text: 1
 --- !u!222 &1290492383
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -6794,7 +6863,7 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: 3
+  m_Text: 1
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
@@ -7211,7 +7280,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 3
+  m_Text: 1
 --- !u!222 &2052396827
 CanvasRenderer:
   m_ObjectHideFlags: 0
