@@ -270,6 +270,7 @@ GameObject:
   - component: {fileID: 89346272}
   - component: {fileID: 89346274}
   - component: {fileID: 89346273}
+  - component: {fileID: 89346275}
   m_Layer: 5
   m_Name: Turn Directions
   m_TagString: Untagged
@@ -423,6 +424,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 89346271}
   m_CullTransparentMesh: 0
+--- !u!225 &89346275
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 89346271}
+  m_Enabled: 1
+  m_Alpha: 0
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &170076733
 GameObject:
   m_ObjectHideFlags: 0
@@ -3446,6 +3459,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1010922227}
   - component: {fileID: 1010922228}
+  - component: {fileID: 1010922229}
   m_Layer: 5
   m_Name: Title
   m_TagString: Untagged
@@ -3486,6 +3500,25 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!95 &1010922229
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1010922226}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 423b2381328912e4998e20130010e414, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &1067230468
 GameObject:
   m_ObjectHideFlags: 0

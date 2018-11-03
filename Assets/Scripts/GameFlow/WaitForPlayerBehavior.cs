@@ -23,6 +23,7 @@ public class WaitForPlayerBehavior : StateMachineBehaviour
     this.animator = animator;
 
     GameFlow gameFlow = animator.GetComponent<GameFlow>();
+    gameFlow.BeginTurnPlay();
     //Debug.LogFormat("Adding WaitForPlayerBehavior.OnTurnEnded as a listener to the current match.");
     gameFlow.match.OnTurnEnded += OnTurnEnded;
   }

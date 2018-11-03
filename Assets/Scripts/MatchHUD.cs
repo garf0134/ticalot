@@ -35,7 +35,8 @@ public class MatchHUD : MonoBehaviour
   {
     canvasGroup.alpha = 0;
     canvasGroup.interactable = false;
-    turnInstructions.enabled = false;
+    CanvasGroup turnInstructionsCanvasGroup = turnInstructions.GetComponent<CanvasGroup>();
+    turnInstructionsCanvasGroup.alpha = 0;
   }
 
   /// <summary>
@@ -115,6 +116,34 @@ public class MatchHUD : MonoBehaviour
     //Debug.LogFormat("Starting {0}'s turn of game {1}", sides[turn].name, m.game);
   }
 
+  public delegate void TurnInstructionEvent();
+  public event TurnInstructionEvent OnShowTurnInstructionsFinished;
+  public event TurnInstructionEvent OnHideTurnInstructionsFinished;
+
+  public void ShowTurnInstructions()
+  {
+    Animator animator = GetComponent<Animator>();
+    animator.SetTrigger("Show Turn Instructions");
+    Debug.Log("Someone called ShowTurnInstructions()");
+  }
+  public void ShowTurnInstructionsFinished()
+  {
+    OnShowTurnInstructionsFinished?.Invoke();
+    Debug.LogFormat("ShowTurnInstructionsFinished() was called");
+  }
+
+  public void HideTurnInstructions()
+  {
+    Animator animator = GetComponent<Animator>();
+    animator.SetTrigger("Hide Turn Instructions");
+    Debug.Log("Someone called HideTurnInstructions()");
+  }
+
+  public void HideTurnInstructionsFinished()
+  {
+    OnHideTurnInstructionsFinished?.Invoke();
+  }
+
   /// <summary>
   /// A listener for <see cref="Match"/>'s OnTurnEned event
   /// Hides turn instructions when a turn ends. This is only until the next turn
@@ -125,7 +154,6 @@ public class MatchHUD : MonoBehaviour
   /// <param name="sides"></param>
   private void OnTurnEnded(Match m, int turn, Side[] sides)
   {
-    turnInstructions.enabled = false;
     //Debug.LogFormat("Ending {0}'s of game {1}", sides[turn].name, m.game);
   }
 

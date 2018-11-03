@@ -18,7 +18,9 @@ public class TitleBehavior : StateMachineBehaviour
   {
     base.OnStateEnter(animator, stateInfo, layerIndex);
     GameFlow gameFlow = animator.GetComponent<GameFlow>();
-    gameFlow.hud.title.gameObject.SetActive(true);
+    Animator titleAnimator = gameFlow.hud.title.GetComponent<Animator>();
+    titleAnimator.SetTrigger("Show");
+
     animator.SetBool("Match Won", false);
     animator.SetBool("Game Ended", false);
   }
@@ -52,6 +54,7 @@ public class TitleBehavior : StateMachineBehaviour
   {
     base.OnStateExit(animator, stateInfo, layerIndex);
     GameFlow gameFlow = animator.GetComponent<GameFlow>();
-    gameFlow.hud.title.gameObject.SetActive(false);
+    Animator titleAnimator = gameFlow.hud.title.GetComponent<Animator>();
+    titleAnimator.SetTrigger("Hide");
   }
 }

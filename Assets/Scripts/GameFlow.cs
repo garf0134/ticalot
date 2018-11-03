@@ -67,6 +67,7 @@ public class GameFlow : MonoBehaviour
   /// </summary>
   public List<PlayerBase> players = new List<PlayerBase>();
 
+  #region MatchListeners
   /// <summary>
   /// A listener for the <see cref="Match.OnMatchBegan"/> event.
   /// Builds a list of <see cref="PlayerBase"/> instances (with associated objects)
@@ -101,7 +102,7 @@ public class GameFlow : MonoBehaviour
       player.gameFlow = this;
       player.piecePrefab = piecePrefab;
       player.transform.SetParent(m.transform);
-
+      OnBeginTurnPlay += player.OnBeginTurnPlay;
       players.Add(player);
     }
 
@@ -119,6 +120,10 @@ public class GameFlow : MonoBehaviour
   {
     Animator animator = GetComponent<Animator>();
     animator.SetBool("Match Won", true);
+    foreach (PlayerBase player in players)
+    {
+      OnBeginTurnPlay -= player.OnBeginTurnPlay;
+    }
   }
 
   /// <summary>
@@ -149,4 +154,24 @@ public class GameFlow : MonoBehaviour
     Animator animator = GetComponent<Animator>();
     animator.SetBool("Game Ended", true);
   }
+  #endregion
+  #region Delegates and Events
+  /// <summary>
+  /// The delegate called when the GameFlow is ready for a player move
+  /// </summary>
+  /// <param name="m">The current match</param>
+  /// <param name="s">The side who's turn it is</param>
+  public delegate void BeginTurnPlayCallback(Match m, Side s);
+  /// <summary>
+  /// The event to signal that the GameFlow is ready for a player move
+  /// </summary>
+  public event BeginTurnPlayCallback OnBeginTurnPlay;
+  /// <summary>
+  /// Called by <see cref="WaitForPlayerBehavior"/> when that state is entered
+  /// </summary>
+  public void BeginTurnPlay()
+  {
+    OnBeginTurnPlay?.Invoke(match, match.turnOrder[match.turn]);
+  }
+  #endregion
 }

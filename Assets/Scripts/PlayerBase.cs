@@ -51,10 +51,6 @@ public abstract class PlayerBase : MonoBehaviour
   protected virtual void SetMatch(Match m)
   {
     _match = m;
-    if (_match != null)
-    {
-      _match.OnTurnBegan += OnTurnBegan;
-    }
   }
 
   /// <summary>
@@ -74,12 +70,10 @@ public abstract class PlayerBase : MonoBehaviour
   /// a turn.
   /// </summary>
   /// <param name="m">The match that the player is playing in</param>
-  /// <param name="turn">The current turn (a player's turn counts as a turn)</param>
-  /// <param name="sides">The list of sides/teams. <code>sides[turn]</code> would be 
-  /// the current side.</param>
-  protected void OnTurnBegan(Match m, int turn, Side[] sides)
+  /// <param name="side">The side whose turn it is</param>
+  public void OnBeginTurnPlay(Match m, Side side)
   {
-    if (sides[turn] == side)
+    if (this.side == side)
     {
       //Debug.LogFormat("Starting Player.Play coroutine");
       StartCoroutine(Play(m.board, m.ruleset));

@@ -328,7 +328,7 @@ public class AIPlayer : PlayerBase
   public override IEnumerator Play(Board b, Ruleset ruleset)
   {
     // Add human-like delay
-    yield return new WaitForSecondsRealtime(UnityEngine.Random.Range(0.5f, 1.2f));
+    yield return new WaitForSecondsRealtime(UnityEngine.Random.Range(0.5f, 1.8f));
 
     // Decide on move
     List<System.ValueTuple<int, int>> validMoves = new List<System.ValueTuple<int, int>>();
