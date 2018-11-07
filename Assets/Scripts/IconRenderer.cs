@@ -2,21 +2,42 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Asynchronously renders icons
+/// </summary>
 public class IconRenderer : MonoBehaviour
 {
+  /// <summary> The Camera used for rendering </summary>
   public new Camera camera;
+  /// <summary> The Light used for illumination </summary>
   public new Light light;
+  /// <summary>
+  /// The class used to encapsulate a icon render job
+  /// </summary>
   private class Job
   {
+  /// <summary> The specification for the model, camera and lighting </summary>
     public PieceIconSet.PieceIconEntry entry;
+  /// <summary> The color for the model </summary>
     public Color color;
   }
+  /// <summary> The Queue for the icon render jobs </summary>
   private Queue<Job> jobs = new Queue<Job>();
+
+  /// <summary>
+  /// Called by Unity, starts the coroutine that handles icon render job
+  /// processing
+  /// </summary>
   private void Start()
   {
     StartCoroutine(ProcessJobs());
   }
 
+  /// <summary>
+  /// Enqueues a new job comprised of the passed in entries and color
+  /// </summary>
+  /// <param name="pieceIconEntries">A list of icons being requested</param>
+  /// <param name="color">The common color that each icon in <paramref name="pieceIconEntries"/> will share</param>
   public void RenderIcons(PieceIconSet.PieceIconEntry[] pieceIconEntries, Color color)
   {
     lock (jobs)
@@ -32,6 +53,14 @@ public class IconRenderer : MonoBehaviour
     }
   }
 
+  /// <summary>
+  /// A coroutine that is run asynchronously to the main update events (though
+  /// on the same thread). Manages how many icons are rendered per update.
+  /// </summary>
+  /// <returns>
+  /// A way to signal the calling environment how long to wait to resume the
+  /// coroutine or if the coroutine is finished.
+  /// </returns>
   private IEnumerator ProcessJobs()
   {
     while (true)
@@ -53,11 +82,16 @@ public class IconRenderer : MonoBehaviour
     }
   }
 
-  private void Update()
-  {
-
-  }
-
+  /// <summary>
+  /// Renders one icon using the specifications in <paramref name="entry"/> and
+  /// <paramref name="color"/>. Declared as public static so that the functionality
+  /// is exposed to the rest of the code without going through the <see cref="jobs"/>
+  /// </summary>
+  /// <param name="entry">The specifications for the icon</param>
+  /// <param name="color">The color to be used by the model</param>
+  /// <param name="camera">The camera to be used for rendering</param>
+  /// <param name="light">The light to be used for lighting</param>
+  /// <returns>true, if the model was loaded and the rendering was successful. False, otherwise.</returns>
   public static bool RenderIcon(PieceIconSet.PieceIconEntry entry, Color color, Camera camera, Light light)
   {
     int culledLayer = LayerMask.NameToLayer("Icon Rendering");

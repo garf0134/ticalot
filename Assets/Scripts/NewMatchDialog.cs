@@ -167,15 +167,14 @@ public class NewMatchDialog : MonoBehaviour
     gamesToWin.onValueChanged.AddListener((string newValue) => { if (newValue.Length > 0) { r.gamesToWin = int.Parse(newValue); } });
   }
 
+  /// <summary>
+  /// Taking the currently selected movement rule, build a set of compatible boards and
+  /// add their player-facing names to the boardType dropdown
+  /// </summary>
   private void BuildBoardDropdownOptions()
   {
     List<Dropdown.OptionData> boardTypeOptions = new List<Dropdown.OptionData>();
     boardType.ClearOptions();
-
-    WinConditionSetting selectedWinCondition = 
-      winConditions.Find(setting => {
-      return setting.GetComponent<Toggle>().isOn;
-    });
 
     MovementRuleSetting selectedRuleSetting = 
       movementRules.Find(setting => {
@@ -202,6 +201,10 @@ public class NewMatchDialog : MonoBehaviour
     boardType.value = 0;
   }
 
+  /// <summary>
+  /// Calculate the currently selected board configuration
+  /// </summary>
+  /// <returns>The currently selected board configuration</returns>
   private BoardConfigurationSet.BoardConfiguration SelectedBoardConfiguration()
   {
     string selectedBoardConfigurationName = boardType.options[boardType.value].text;
@@ -215,11 +218,19 @@ public class NewMatchDialog : MonoBehaviour
     return null;
   }
 
+  /// <summary>
+  /// Calculates the currently selected tile configuration
+  /// </summary>
+  /// <returns>The resource path to the currently selected tile's resource</returns>
   private string SelectedTileConfiguration()
   {
     return tileType.options[tileType.value].text;
   }
 
+  /// <summary>
+  /// Using the currently selected board configuration, build a set of tile options
+  /// that are used in the board configuration.
+  /// </summary>
   private void BuildTileDropdownOptions()
   {
     List<Dropdown.OptionData> tileTypeOptions = new List<Dropdown.OptionData>();
@@ -260,6 +271,11 @@ public class NewMatchDialog : MonoBehaviour
     return int.Parse(builder.ToString()) >= 3 ? addedChar : '\0';
   }
 
+  /// <summary>
+  /// Calculates the selected movement rule
+  /// </summary>
+  /// <returns>The currently selected movement rule. Presently hardcoded to 
+  /// <see cref="Ruleset.ValidMove.Anywhere"/></returns>
   private Ruleset.ValidMove SelectedMovementRule()
   {
     Ruleset.ValidMove ret = Ruleset.ValidMove.Anywhere;
