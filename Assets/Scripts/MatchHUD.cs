@@ -124,19 +124,17 @@ public class MatchHUD : MonoBehaviour
   {
     Animator animator = GetComponent<Animator>();
     animator.SetTrigger("Show Turn Instructions");
-    Debug.Log("Someone called ShowTurnInstructions()");
   }
+
   public void ShowTurnInstructionsFinished()
   {
     OnShowTurnInstructionsFinished?.Invoke();
-    Debug.LogFormat("ShowTurnInstructionsFinished() was called");
   }
 
   public void HideTurnInstructions()
   {
     Animator animator = GetComponent<Animator>();
     animator.SetTrigger("Hide Turn Instructions");
-    Debug.Log("Someone called HideTurnInstructions()");
   }
 
   public void HideTurnInstructionsFinished()

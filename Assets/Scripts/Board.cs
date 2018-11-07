@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class Board : MonoBehaviour
 {
+  /// <summary>The player-facing name of the board</summary>
+  public string boardName;
+
   /// <summary>
   /// The direction enum exists to provide geometric structure and ordering to the tiles on a board.
   /// </summary>

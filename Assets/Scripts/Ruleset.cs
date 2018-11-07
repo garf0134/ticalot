@@ -33,6 +33,11 @@ public class Ruleset: ScriptableObject
   ///<summary>The number of columns the board has</summary>
   public int cols = 3;
 
+  /// <summary>A reference to the 3d object used for each tile</summary>
+  public string tileResource;
+  /// <summary>A reference to the 3d object used for a board</summary>
+  public string boardResource;
+
   /// <summary>
   /// The way a game is won
   /// </summary>

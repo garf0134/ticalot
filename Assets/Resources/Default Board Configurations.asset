@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69cff47fcccca8b4bbc05b627c00714e, type: 3}
+  m_Name: Default Board Configurations
+  m_EditorClassIdentifier: 
+  configurations:
+  - allowedMoves: 00000000
+    allowedBoards:
+    - Boards/Flat Board 00
+    allowedTiles:
+    - Board Tiles/Flat Tile 00
+    tileOrientation: 0
+    name: Flat
+  - allowedMoves: 0100000000000000
+    allowedBoards:
+    - Boards/Flat Board 00
+    allowedTiles:
+    - Board Tiles/Vertical Tile 00
+    tileOrientation: 1
+    name: Drop

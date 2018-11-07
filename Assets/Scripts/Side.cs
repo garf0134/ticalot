@@ -33,4 +33,7 @@ public class Side
 
   /// <summary>The strategy that the AI will choose if the role of the side is AI</summary>
   public AIPlayer.Strategy aiStrategy;
+
+  /// <summary>A reference to the 3D model used for the piece for this side</summary>
+  public string pieceResource;
 }

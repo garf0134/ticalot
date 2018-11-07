@@ -9,6 +9,11 @@ using UnityEngine;
 public class Tile : MonoBehaviour
 {
   /// <summary>
+  /// The name of the tile's family (but not the name of the tile specifically, <see cref="MonoBehaviour.name"/>)"/>
+  /// </summary>
+  public string tileFamilyName;
+
+  /// <summary>
   /// The row on the game board that the tile resides on
   /// </summary>
   public int row;

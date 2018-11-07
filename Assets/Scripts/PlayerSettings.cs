@@ -21,9 +21,13 @@ public class PlayerSettings : MonoBehaviour
   public Dropdown iconDropdown;
   /// <summary> A dropdown to select the color to be used for the side during the match </summary>
   public Dropdown colorDropdown;
+  /// <summary> A dropdown to select the piece to be used for the side during the match </summary>
+  public Dropdown pieceDropdown;
 
   /// <summary> A set of colors read in from the Resources folder </summary>
   private ColorSet defaultSideColors;
+  /// <summary> A set of pieces read in from the Resources folder</summary>
+  private PieceIconSet defaultPieces;
 
   /// <summary> Start is called before the first frame update </summary>
   void Start()
@@ -41,7 +45,7 @@ public class PlayerSettings : MonoBehaviour
 
     iconDropdown.AddOptions(iconOptions);
 
-    defaultSideColors = Resources.Load<ColorSet>("Default Side Colors");
+    defaultSideColors = Instantiate<ColorSet>(Resources.Load<ColorSet>("Default Side Colors"));
     colorDropdown.ClearOptions();
     List<Dropdown.OptionData> colorOptions = new List<Dropdown.OptionData>();
     foreach (var color in defaultSideColors.colors)
@@ -57,6 +61,43 @@ public class PlayerSettings : MonoBehaviour
       colorOptions.Add(data);
     }
     colorDropdown.AddOptions(colorOptions);
+
+    defaultPieces = Instantiate<PieceIconSet>(Resources.Load<PieceIconSet>("Default Pieces"));
+    colorDropdown.onValueChanged.AddListener(index => {
+      RebuildGamePieceOptions(SelectedColor());
+    });
+
+    RebuildGamePieceOptions(SelectedColor());
+  }
+
+  /// <summary>
+  /// Creates new textures, assigns them to new sprites used by a new
+  /// list of game piece options and then defers to <see cref="IconRenderer.RenderIcons(PieceIconSet.PieceIconEntry[], Color)"/>
+  /// to build out thumbnails of the game pieces.
+  /// </summary>
+  /// <param name="color">The color that each game piece should be rendered with</param>
+  private void RebuildGamePieceOptions(Color color)
+  {
+    pieceDropdown.ClearOptions();
+    List<Dropdown.OptionData> piecesOptions = new List<Dropdown.OptionData>();
+
+    GameObject iconCameraObject = GameObject.Find("Icon Camera");
+    IconRenderer iconRenderer = iconCameraObject.GetComponent<IconRenderer>();
+    iconRenderer.RenderIcons(defaultPieces.iconEntries, color);
+
+    foreach (var piece in defaultPieces.iconEntries)
+    {
+      Sprite s = Sprite.Create(piece.texture, new Rect(0, 0, 256, 256), Vector2.zero);
+      s.name = piece.modelName;
+
+      Dropdown.OptionData data = new Dropdown.OptionData()
+      {
+        image = s,
+        text = piece.modelName
+      };
+      piecesOptions.Add(data);
+    }
+    pieceDropdown.AddOptions(piecesOptions);
   }
 
   /// <summary>
@@ -84,6 +125,15 @@ public class PlayerSettings : MonoBehaviour
   public string SelectedIcon()
   {
     return iconDropdown.options[iconDropdown.value].text;
+  }
+
+  /// <summary>
+  /// Gets the resource reference for the selected game piece model
+  /// </summary>
+  /// <returns>The resource reference to the game piece model for this side</returns>
+  public string SelectedPieceResource()
+  {
+    return pieceDropdown.options[pieceDropdown.value].text;
   }
 
   /// <summary>
