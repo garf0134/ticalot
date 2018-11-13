@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,7 +24,11 @@ public class NewMatchDialog : MonoBehaviour
   public InputField gamesToWin;
   /// <summary>The maximum number of games that are played</summary>
   public InputField maxGames;
-
+  /// <summary>The dropdown controlling the type of board</summary>
+  public Dropdown boardType;
+  /// <summary>The dropdown controlling the type of tile</summary>
+  public Dropdown tileType;
+  
   /// <summary>The ruleset being built for the next match</summary>
   public Ruleset r;
   /// <summary>The PlayerSettings UI controller for each player</summary>
@@ -48,6 +53,8 @@ public class NewMatchDialog : MonoBehaviour
   public event AnimationEvent OnShowFinished;
   /// <summary>The hide animation has finished</summary>
   public event AnimationEvent OnHideFinished;
+  /// <summary>All board configurations supported</summary>
+  public BoardConfigurationSet boardConfigurations;
 
   /// <summary>
   /// The Unity initialization hook.
@@ -59,6 +66,45 @@ public class NewMatchDialog : MonoBehaviour
     playerSettings.AddRange(GetComponentsInChildren<PlayerSettings>());
     winConditions.AddRange(GetComponentsInChildren<WinConditionSetting>());
     movementRules.AddRange(GetComponentsInChildren<MovementRuleSetting>());
+    foreach (var movementRuleSetting in movementRules)
+    {
+      Toggle toggle = movementRuleSetting.GetComponent<Toggle>();
+      toggle.onValueChanged.AddListener((bool newValue) => {
+        if (newValue)
+        {
+          boardType.onValueChanged?.Invoke(boardType.value);
+        }
+      });
+    }
+
+    boardConfigurations = Resources.Load<BoardConfigurationSet>("Default Board Configurations");
+    BuildBoardDropdownOptions();
+
+    boardType.onValueChanged.AddListener(newIndex =>
+    {
+      BoardRuleSetting boardRuleSetting = boardType.options[newIndex] as BoardRuleSetting;
+      if (r != null)
+      {
+        r.boardResource = boardRuleSetting.boardResource;
+      }
+
+      BuildTileDropdownOptions();
+      tileType.onValueChanged?.Invoke(tileType.value);
+      var selectedBoardConfiguration = SelectedBoardConfiguration();
+      foreach (var playerSetting in playerSettings)
+      {
+        playerSetting.OnBoardConfigurationChanged(selectedBoardConfiguration);
+      }
+    });
+
+    tileType.onValueChanged.AddListener(newIndex =>
+    {
+      if (r != null)
+      {
+        TileRuleSetting tileRuleSetting = tileType.options[newIndex] as TileRuleSetting;
+        r.tileResource = tileRuleSetting.tileResource;
+      }
+    });
 
     // Randomize the sides icons and colors and add callbacks. Also set the first two
     // player settings toggles to enabled and read-only
@@ -67,7 +113,7 @@ public class NewMatchDialog : MonoBehaviour
     for (int i = 0; i < playerSettings.Count; i++)
     {
       var playerSetting = playerSettings[i];
-      if ( i < 2 )
+      if (i < 2)
       {
         playerSetting.sideEnabled.isOn = true;
         playerSetting.sideEnabled.interactable = false;
@@ -104,16 +150,26 @@ public class NewMatchDialog : MonoBehaviour
         }
       });
 
-      
+
       playerSetting.iconDropdown.value = Random.Range(0, playerSetting.iconDropdown.options.Count);
+      playerSetting.pieceDropdown.value = Random.Range(0, playerSetting.pieceDropdown.options.Count);
+      playerSetting.pieceDropdown.onValueChanged?.Invoke(playerSetting.pieceDropdown.value);
 
       // The first playersetting gets all the color choices
-      if ( i == 0)
+      if (i == 0)
       {
         colorsNotChosen.AddRange(System.Linq.Enumerable.Range(0, playerSetting.colorDropdown.options.Count));
       }
 
-      playerSetting.colorDropdown.value = colorsNotChosen[Random.Range(0, colorsNotChosen.Count)];
+      int chosen = colorsNotChosen[Random.Range(0, colorsNotChosen.Count)];
+      if (playerSetting.colorDropdown.value != chosen)
+      {
+        playerSetting.colorDropdown.value = chosen;
+      }
+      else
+      {
+        playerSetting.colorDropdown.onValueChanged?.Invoke(chosen);
+      }
       colorsNotChosen.Remove(playerSetting.colorDropdown.value);
     }
 
@@ -121,16 +177,113 @@ public class NewMatchDialog : MonoBehaviour
     rows.onValueChanged.AddListener((string newValue) => { if (newValue.Length > 0) { r.rows = int.Parse(newValue); } });
 
     columns.onValidateInput += ValidateRowsAndColumns;
-    columns.onValueChanged.AddListener((string newValue) => { if (newValue.Length > 0) { r.cols = int.Parse(newValue); }  });
+    columns.onValueChanged.AddListener((string newValue) => { if (newValue.Length > 0) { r.cols = int.Parse(newValue); } });
 
     matchN.onValidateInput += ValidateMatchN;
     matchN.onValueChanged.AddListener((string newValue) => { if (newValue.Length > 0) { r.consecutiveTiles = int.Parse(newValue); } });
 
     maxGames.onValidateInput += ValidateMaxGames;
-    maxGames.onValueChanged.AddListener((string newValue) => { if (newValue.Length > 0) { r.maxGames = int.Parse(newValue); }  });
+    maxGames.onValueChanged.AddListener((string newValue) => { if (newValue.Length > 0) { r.maxGames = int.Parse(newValue); } });
 
     gamesToWin.onValidateInput += ValidateGamesToWin;
     gamesToWin.onValueChanged.AddListener((string newValue) => { if (newValue.Length > 0) { r.gamesToWin = int.Parse(newValue); } });
+
+    var movementRule = movementRules.FirstOrDefault((ruleSetting) => { return ruleSetting.GetComponent<Toggle>().isOn; });
+    if (movementRule != null)
+    {
+      movementRule.GetComponent<Toggle>().onValueChanged?.Invoke(true);
+    }
+  }
+
+  /// <summary>
+  /// Taking the currently selected movement rule, build a set of compatible boards and
+  /// add their player-facing names to the boardType dropdown
+  /// </summary>
+  private void BuildBoardDropdownOptions()
+  {
+    List<Dropdown.OptionData> boardTypeOptions = new List<Dropdown.OptionData>();
+    boardType.ClearOptions();
+
+    MovementRuleSetting selectedRuleSetting = 
+      movementRules.Find(setting => {
+      return setting.GetComponent<Toggle>().isOn;
+    });
+    foreach (var boardConfiguration in boardConfigurations.configurations)
+    {
+      bool validMove = boardConfiguration.allowedMoves.Any(move => { return move == selectedRuleSetting.movement; });
+      if (validMove)
+      {
+        foreach (var allowedBoard in boardConfiguration.allowedBoards)
+        {
+          GameObject boardObject = Resources.Load<GameObject>(allowedBoard);
+          Board b = boardObject.GetComponent<Board>();
+          BoardRuleSetting optionData = new BoardRuleSetting();
+          optionData.text = b.boardName;
+          optionData.boardResource = allowedBoard;
+          boardTypeOptions.Add(optionData);
+        }
+      }
+    }
+
+    boardType.AddOptions(boardTypeOptions);
+    boardType.value = 0;
+  }
+
+  /// <summary>
+  /// Calculate the currently selected board configuration
+  /// </summary>
+  /// <returns>The currently selected board configuration</returns>
+  private BoardConfigurationSet.BoardConfiguration SelectedBoardConfiguration()
+  {
+    BoardRuleSetting boardRuleSetting = (BoardRuleSetting)boardType.options[boardType.value];
+    string selectedBoardResource = boardRuleSetting.boardResource;
+    MovementRuleSetting selectedRuleSetting =
+      movementRules.Find(setting => {
+        return setting.GetComponent<Toggle>().isOn;
+      });
+    foreach (var boardConfiguration in boardConfigurations.configurations)
+    {
+      bool validMove = boardConfiguration.allowedMoves.Any(
+        (movementRule) => { return movementRule == selectedRuleSetting.movement; });
+      bool validResource = boardConfiguration.allowedBoards.Any(
+        (resourcePath) => { return resourcePath == selectedBoardResource; });
+      if (validMove && validResource )
+      {
+        return boardConfiguration;
+      }
+    }
+    return null;
+  }
+
+  /// <summary>
+  /// Calculates the currently selected tile configuration
+  /// </summary>
+  /// <returns>The resource path to the currently selected tile's resource</returns>
+  private string SelectedTileConfiguration()
+  {
+    return tileType.options[tileType.value].text;
+  }
+
+  /// <summary>
+  /// Using the currently selected board configuration, build a set of tile options
+  /// that are used in the board configuration.
+  /// </summary>
+  private void BuildTileDropdownOptions()
+  {
+    List<Dropdown.OptionData> tileTypeOptions = new List<Dropdown.OptionData>();
+    tileType.ClearOptions();
+    BoardConfigurationSet.BoardConfiguration boardConfiguration = SelectedBoardConfiguration();
+    foreach (var tileName in boardConfiguration.allowedTiles)
+    {
+      GameObject prefab = Resources.Load<GameObject>(tileName);
+      Tile tile = prefab.GetComponent<Tile>();
+
+      TileRuleSetting optionData = new TileRuleSetting();
+      optionData.text = tile.tileFamilyName;
+      optionData.tileResource = tileName;
+      tileTypeOptions.Add(optionData);
+    }
+    tileType.AddOptions(tileTypeOptions);
   }
 
   /// <summary>
@@ -153,6 +306,18 @@ public class NewMatchDialog : MonoBehaviour
       builder.Append(addedChar);
     }
     return int.Parse(builder.ToString()) >= 3 ? addedChar : '\0';
+  }
+
+  /// <summary>
+  /// Calculates the selected movement rule
+  /// </summary>
+  /// <returns>The currently selected movement rule. Presently hardcoded to 
+  /// <see cref="Ruleset.ValidMove.Anywhere"/></returns>
+  private Ruleset.ValidMove SelectedMovementRule()
+  {
+    Ruleset.ValidMove ret = Ruleset.ValidMove.Anywhere;
+
+    return ret;
   }
 
   /// <summary>
@@ -254,6 +419,12 @@ public class NewMatchDialog : MonoBehaviour
     r.consecutiveTiles = int.Parse(matchN.text);
     r.maxGames = int.Parse(maxGames.text);
     r.gamesToWin = int.Parse(gamesToWin.text);
+
+    // Assumes that there is one movement rule setting and win condition toggled on
+    r.validMove = movementRules.First((movementRuleSetting) => { return movementRuleSetting.GetComponent<Toggle>().isOn; }).movement;
+    r.winCondition = winConditions.First((winCondition) => { return winCondition.GetComponent<Toggle>().isOn; }).winCondition;
+    r.boardResource = (boardType.options[boardType.value] as BoardRuleSetting).boardResource;
+    r.tileResource = (tileType.options[tileType.value] as TileRuleSetting).tileResource;
   }
 
   /// <summary>
@@ -284,7 +455,7 @@ public class NewMatchDialog : MonoBehaviour
     foreach (var moveRule in movementRules)
     {
       Toggle t = moveRule.GetComponent<Toggle>();
-      if (t.isOn)
+      if (t.isOn && r != null)
       {
         r.validMove = moveRule.movement;
       }
@@ -305,7 +476,6 @@ public class NewMatchDialog : MonoBehaviour
   /// </summary>
   public void Hide()
   {
-    Debug.LogFormat("Someone called Hide()");
     Animator animator = GetComponent<Animator>();
     animator.SetTrigger("Hide");
   }
@@ -330,6 +500,7 @@ public class NewMatchDialog : MonoBehaviour
       s.color = playerSetting.SelectedColor();
       s.role = playerSetting.SelectedRole();
       s.iconName = playerSetting.SelectedIcon();
+      s.pieceResource = playerSetting.SelectedPieceResource();
       s.name = playerSetting.SelectedName();
       s.aiStrategy = playerSetting.SelectedAIRoleStrategy();
 

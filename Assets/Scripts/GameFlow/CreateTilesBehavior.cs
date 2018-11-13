@@ -16,6 +16,8 @@ public class CreateTilesBehavior : StateMachineBehaviour
   private int row = 0;
   /// <summary>The column where the new Tile will be created</summary>
   private int col = 0;
+  /// <summary>The tile prefab</summary>
+  GameObject tilePrefab;
 
   /// <summary>
   /// The callback for a StateMachineBehaviour's start event
@@ -30,6 +32,13 @@ public class CreateTilesBehavior : StateMachineBehaviour
     row = 0;
     col = 0;
     tileDropTimer = 0.0f;
+    GameFlow gameFlow = animator.GetComponent<GameFlow>();
+    tilePrefab = Resources.Load<GameObject>(gameFlow.match.ruleset.tileResource);
+    Tile t = tilePrefab.GetComponent<Tile>();
+    if (t.tileOrientation == Tile.TileOrientation.Vertical)
+    {
+      row = gameFlow.match.ruleset.rows - 1;
+    }
   }
 
   /// <summary>
@@ -46,33 +55,56 @@ public class CreateTilesBehavior : StateMachineBehaviour
     tileDropTimer -= Time.deltaTime;
     GameFlow gameFlow = animator.GetComponent<GameFlow>();
 
-    if (tileDropTimer > 0.0f || row >= gameFlow.match.ruleset.rows )
+    if (tileDropTimer > 0.0f || row >= gameFlow.match.ruleset.rows || row < 0)
     {
       return;
     }
 
-    
-    GameObject tileInstance = Instantiate<GameObject>(gameFlow.tilePrefab);
+    GameObject tileInstance = Instantiate<GameObject>(tilePrefab);
     Tile t = tileInstance.GetComponent<Tile>();
     t.name = string.Format("{0},{1}", row, col);
     t.row = row;
     t.column = col;
-    Material m = tileInstance.GetComponent<MeshRenderer>().material;
+
+    Material m = tileInstance.GetComponentInChildren<MeshRenderer>().material;
     m.color = gameFlow.tileNormalColor;
 
-    Vector3 finalBoardPosition = Vector3.right * (col - gameFlow.match.ruleset.cols / 2.0f) * gameFlow.tileDimensions + Vector3.forward * ((gameFlow.match.ruleset.rows - row - 1) - gameFlow.match.ruleset.rows / 2.0f) * gameFlow.tileDimensions;
-    t.transform.SetParent(gameFlow.match.board.transform);
-    t.transform.position = gameFlow.match.board.transform.position + finalBoardPosition + Vector3.up * 10.0f;
-
+    if (t.tileOrientation == Tile.TileOrientation.Horizontal)
+    {
+      Vector3 finalBoardPosition = Vector3.right * (col - gameFlow.match.ruleset.cols / 2.0f) * gameFlow.tileDimensions + Vector3.forward * ((gameFlow.match.ruleset.rows - row - 1) - gameFlow.match.ruleset.rows / 2.0f) * gameFlow.tileDimensions;
+      t.transform.SetParent(gameFlow.match.board.transform);
+      t.transform.position = gameFlow.match.board.transform.position + finalBoardPosition + Vector3.up * 10.0f;
+      t.transform.rotation = Quaternion.identity;
+    }
+    else if (t.tileOrientation == Tile.TileOrientation.Vertical)
+    {
+      Vector3 finalBoardPosition = Vector3.right * (col - gameFlow.match.ruleset.cols / 2.0f) * gameFlow.tileDimensions +
+        Vector3.up * ((gameFlow.match.ruleset.rows - row - 1) - gameFlow.match.ruleset.rows / 2.0f) * gameFlow.tileDimensions;
+      t.transform.SetParent(gameFlow.match.board.transform);
+      t.transform.position = gameFlow.match.board.transform.position + finalBoardPosition + Vector3.up * 10.0f;
+      t.transform.rotation = Quaternion.AngleAxis(90.0f, Vector3.right);
+    }
     tileDropTimer = 1 / gameFlow.tileDropRate;
     col++;
     if (col >= gameFlow.match.ruleset.cols)
     {
       col = 0;
-      row++;
-      if ( row == gameFlow.match.ruleset.rows)
+
+      if (t.tileOrientation == Tile.TileOrientation.Horizontal)
       {
-        animator.SetTrigger("Tiles Placed");
+        row++;
+        if (row == gameFlow.match.ruleset.rows)
+        {
+          animator.SetTrigger("Tiles Placed");
+        }
+      }
+      else if (t.tileOrientation == Tile.TileOrientation.Vertical)
+      {
+        row--;
+        if (row < 0)
+        {
+          animator.SetTrigger("Tiles Placed");
+        }
       }
     }
   }

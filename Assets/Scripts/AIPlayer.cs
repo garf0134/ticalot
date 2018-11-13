@@ -359,13 +359,8 @@ public class AIPlayer : PlayerBase
     {
       Piece piece = CreatePiece();
 
-      if (match.RegisterMove(side, chosenMove, piece))
-      {
-        piece.transform.SetParent(chosenMove.transform);
-        piece.transform.localPosition = Vector3.zero;
-      }
-      else
-      {
+      if (!match.RegisterMove(side, chosenMove, piece))
+      { 
         DestroyImmediate(piece.gameObject);
       }
     }

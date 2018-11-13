@@ -116,29 +116,42 @@ public class MatchHUD : MonoBehaviour
     //Debug.LogFormat("Starting {0}'s turn of game {1}", sides[turn].name, m.game);
   }
 
+  /// <summary>A delegate for when animations for the turn instructions are finished.</summary>
   public delegate void TurnInstructionEvent();
+  /// <summary>An event that is fired when the turn instructions complete the show animation.</summary>
   public event TurnInstructionEvent OnShowTurnInstructionsFinished;
+  /// <summary>An event that is fired when the turn instructions complete the hide animation.</summary>
   public event TurnInstructionEvent OnHideTurnInstructionsFinished;
 
+  /// <summary>
+  /// Starts the show animation for the turn instructions
+  /// </summary>
   public void ShowTurnInstructions()
   {
     Animator animator = GetComponent<Animator>();
     animator.SetTrigger("Show Turn Instructions");
-    Debug.Log("Someone called ShowTurnInstructions()");
   }
+
+  /// <summary>
+  /// A Unity3d event hook for when the Show animation is finished.
+  /// </summary>
   public void ShowTurnInstructionsFinished()
   {
     OnShowTurnInstructionsFinished?.Invoke();
-    Debug.LogFormat("ShowTurnInstructionsFinished() was called");
   }
 
+  /// <summary>
+  /// Starts the hide animation for the turn instructions
+  /// </summary>
   public void HideTurnInstructions()
   {
     Animator animator = GetComponent<Animator>();
     animator.SetTrigger("Hide Turn Instructions");
-    Debug.Log("Someone called HideTurnInstructions()");
   }
 
+  /// <summary>
+  /// A Unity event hook for when the Hide animation is finished.
+  /// </summary>
   public void HideTurnInstructionsFinished()
   {
     OnHideTurnInstructionsFinished?.Invoke();

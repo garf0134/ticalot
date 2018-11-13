@@ -32,9 +32,6 @@ public class HumanPlayer : PlayerBase
             Piece piece = CreatePiece();
             if (match.RegisterMove(side, t, piece))
             {
-              piece.transform.SetParent(t.transform);
-              piece.transform.localPosition = Vector3.zero;
-
               yield break;
             }
             else

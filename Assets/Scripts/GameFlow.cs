@@ -11,20 +11,9 @@ public class GameFlow : MonoBehaviour
   /// <summary>The HUD UI</summary>
   public HUD hud;
 
-  #region Prefabs
   /// <summary>The match object used as the template for all new matches</summary>
   public GameObject matchPrefab;
 
-  /// <summary>The 3d object used as the template for all pieces</summary>
-  public GameObject piecePrefab;
-
-  /// <summary>The 3d object used for each tile</summary>
-  public GameObject tilePrefab;
-
-  /// <summary>The 3d object used for a board</summary>
-  public GameObject boardPrefab;
-
-  #endregion
 
   #region LookAndFeel
   /// <summary>
@@ -100,7 +89,7 @@ public class GameFlow : MonoBehaviour
       player.side = s;
       player.match = m;
       player.gameFlow = this;
-      player.piecePrefab = piecePrefab;
+      player.pieceResource = s.pieceResource;
       player.transform.SetParent(m.transform);
       OnBeginTurnPlay += player.OnBeginTurnPlay;
       players.Add(player);

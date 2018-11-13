@@ -33,10 +33,8 @@ public abstract class PlayerBase : MonoBehaviour
   /// </summary>
   public Side side;
 
-  /// <summary>
-  /// The GameObject that represents this player's game piece.
-  /// </summary>
-  public GameObject piecePrefab;
+  /// <summary>A reference to the 3d object used as the template for all pieces</summary>
+  public string pieceResource;
 
   /// <summary>
   /// The match that the player is playing in
@@ -87,7 +85,7 @@ public abstract class PlayerBase : MonoBehaviour
   /// <returns>A new Piece component that belongs to a new GameObject</returns>
   protected Piece CreatePiece()
   {
-    GameObject pieceInstance = Instantiate<GameObject>(piecePrefab);
+    GameObject pieceInstance = Instantiate<GameObject>(Resources.Load<GameObject>(side.pieceResource));
     Piece piece = pieceInstance.GetComponent<Piece>();
     piece.side = side;
     piece.GetComponentInChildren<MeshRenderer>().material.color = side.color;

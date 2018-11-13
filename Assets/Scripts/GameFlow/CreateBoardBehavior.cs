@@ -16,7 +16,8 @@ public class CreateBoardBehavior : StateMachineBehaviour
   {
     base.OnStateEnter(animator, stateInfo, layerIndex);
     GameFlow gameFlow = animator.GetComponent<GameFlow>();
-    GameObject boardInstance = Object.Instantiate<GameObject>(gameFlow.boardPrefab);
+
+    GameObject boardInstance = Instantiate<GameObject>(Resources.Load<GameObject>(gameFlow.match.ruleset.boardResource));
     Board b = boardInstance.GetComponent<Board>();
     gameFlow.match.board = b;
 
