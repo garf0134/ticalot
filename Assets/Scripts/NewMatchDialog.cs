@@ -83,7 +83,11 @@ public class NewMatchDialog : MonoBehaviour
     boardType.onValueChanged.AddListener(newIndex =>
     {
       BoardRuleSetting boardRuleSetting = boardType.options[newIndex] as BoardRuleSetting;
-      r.boardResource = boardRuleSetting.boardResource;
+      if (r != null)
+      {
+        r.boardResource = boardRuleSetting.boardResource;
+      }
+
       BuildTileDropdownOptions();
       tileType.onValueChanged?.Invoke(tileType.value);
       var selectedBoardConfiguration = SelectedBoardConfiguration();
@@ -95,8 +99,11 @@ public class NewMatchDialog : MonoBehaviour
 
     tileType.onValueChanged.AddListener(newIndex =>
     {
-      TileRuleSetting tileRuleSetting = tileType.options[newIndex] as TileRuleSetting;
-      r.tileResource = tileRuleSetting.tileResource;
+      if (r != null)
+      {
+        TileRuleSetting tileRuleSetting = tileType.options[newIndex] as TileRuleSetting;
+        r.tileResource = tileRuleSetting.tileResource;
+      }
     });
 
     // Randomize the sides icons and colors and add callbacks. Also set the first two
@@ -180,6 +187,12 @@ public class NewMatchDialog : MonoBehaviour
 
     gamesToWin.onValidateInput += ValidateGamesToWin;
     gamesToWin.onValueChanged.AddListener((string newValue) => { if (newValue.Length > 0) { r.gamesToWin = int.Parse(newValue); } });
+
+    var movementRule = movementRules.FirstOrDefault((ruleSetting) => { return ruleSetting.GetComponent<Toggle>().isOn; });
+    if (movementRule != null)
+    {
+      movementRule.GetComponent<Toggle>().onValueChanged?.Invoke(true);
+    }
   }
 
   /// <summary>
@@ -407,8 +420,11 @@ public class NewMatchDialog : MonoBehaviour
     r.maxGames = int.Parse(maxGames.text);
     r.gamesToWin = int.Parse(gamesToWin.text);
 
-    boardType.onValueChanged?.Invoke(boardType.value);
-    tileType.onValueChanged?.Invoke(boardType.value);
+    // Assumes that there is one movement rule setting and win condition toggled on
+    r.validMove = movementRules.First((movementRuleSetting) => { return movementRuleSetting.GetComponent<Toggle>().isOn; }).movement;
+    r.winCondition = winConditions.First((winCondition) => { return winCondition.GetComponent<Toggle>().isOn; }).winCondition;
+    r.boardResource = (boardType.options[boardType.value] as BoardRuleSetting).boardResource;
+    r.tileResource = (tileType.options[tileType.value] as TileRuleSetting).tileResource;
   }
 
   /// <summary>
@@ -439,7 +455,7 @@ public class NewMatchDialog : MonoBehaviour
     foreach (var moveRule in movementRules)
     {
       Toggle t = moveRule.GetComponent<Toggle>();
-      if (t.isOn)
+      if (t.isOn && r != null)
       {
         r.validMove = moveRule.movement;
       }

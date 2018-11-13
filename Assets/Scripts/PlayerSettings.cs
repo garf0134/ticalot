@@ -70,8 +70,6 @@ public class PlayerSettings : MonoBehaviour
     colorDropdown.onValueChanged.AddListener(index => {
       RebuildGamePieceOptions(SelectedColor());
     });
-
-    RebuildGamePieceOptions(SelectedColor());
   }
 
   /// <summary>
