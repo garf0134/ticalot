@@ -23,6 +23,16 @@ public class Tile : MonoBehaviour
   /// </summary>
   public int column;
 
+  /// <summary>
+  /// The orientation of the tile, only horizontal and vertical orientations supported
+  /// </summary>
+  public enum TileOrientation
+  {
+    Horizontal,
+    Vertical
+  }
+  public TileOrientation tileOrientation;
+
   /// <summary>Who occupies the tile, or null if tile is unoccupied. 
   /// When set, triggers the <see cref="OnPiecePlaced"/>event.</summary>
   /// <value>Backed by the private field, _piece</value>
@@ -31,6 +41,30 @@ public class Tile : MonoBehaviour
     get { return _piece; }
     set {
       _piece = value;
+      if (value != null)
+      {
+        value.transform.SetParent(transform);
+
+        MeshRenderer meshRenderer = GetComponentInChildren<MeshRenderer>();
+        float maxY = meshRenderer.bounds.max.y;
+        float centerZ = meshRenderer.bounds.extents.z;
+        Vector3 offset = Vector3.zero;
+        Quaternion orientation = Quaternion.identity;
+        switch (tileOrientation)
+        {
+          case TileOrientation.Vertical:
+            //orientation = Quaternion.AngleAxis(90.0f, Vector3.right);
+            offset = Vector3.up * maxY * (row + 1);
+            break;
+          case TileOrientation.Horizontal:
+            offset = Vector3.up * maxY * 10.0f;
+            break;
+          default:
+            break;
+        }
+        value.transform.position = transform.position + offset;
+        value.transform.rotation = orientation;
+      }
       OnPiecePlaced?.Invoke(this, value);
     }
   }
@@ -57,7 +91,10 @@ public class Tile : MonoBehaviour
   /// <param name="collision"></param>
   private void OnCollisionStay(Collision collision)
   {
-    GetComponent<Rigidbody>().Sleep();
+    Rigidbody rigidbody = GetComponent<Rigidbody>();
+    rigidbody.Sleep();
+    rigidbody.collisionDetectionMode = CollisionDetectionMode.Discrete;
+    rigidbody.isKinematic = true;
   }
 
 #if UNITY_EDITOR

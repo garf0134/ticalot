@@ -20,17 +20,8 @@ public class BoardConfigurationSet: ScriptableObject
     public string[] allowedBoards;
     /// <summary>Which tiles are allowed in this configuration</summary>
     public string[] allowedTiles;
-    /// <summary>
-    /// When introducing tiles and game pieces, answers the question: how is
-    /// the board supposed to be oriented?
-    /// </summary>
-    public enum TileOrientation
-    {
-      Flat,
-      Vertical
-    }
     /// <summary>The tile orientation</summary>
-    public TileOrientation tileOrientation;
+    public Tile.TileOrientation tileOrientation;
     /// <summary>The name of the configuration</summary>
     public string name;
   }

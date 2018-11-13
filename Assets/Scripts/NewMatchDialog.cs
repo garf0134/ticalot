@@ -66,6 +66,16 @@ public class NewMatchDialog : MonoBehaviour
     playerSettings.AddRange(GetComponentsInChildren<PlayerSettings>());
     winConditions.AddRange(GetComponentsInChildren<WinConditionSetting>());
     movementRules.AddRange(GetComponentsInChildren<MovementRuleSetting>());
+    foreach (var movementRuleSetting in movementRules)
+    {
+      Toggle toggle = movementRuleSetting.GetComponent<Toggle>();
+      toggle.onValueChanged.AddListener((bool newValue) => {
+        if (newValue)
+        {
+          boardType.onValueChanged?.Invoke(boardType.value);
+        }
+      });
+    }
 
     boardConfigurations = Resources.Load<BoardConfigurationSet>("Default Board Configurations");
     BuildBoardDropdownOptions();
@@ -75,6 +85,12 @@ public class NewMatchDialog : MonoBehaviour
       BoardRuleSetting boardRuleSetting = boardType.options[newIndex] as BoardRuleSetting;
       r.boardResource = boardRuleSetting.boardResource;
       BuildTileDropdownOptions();
+      tileType.onValueChanged?.Invoke(tileType.value);
+      var selectedBoardConfiguration = SelectedBoardConfiguration();
+      foreach (var playerSetting in playerSettings)
+      {
+        playerSetting.OnBoardConfigurationChanged(selectedBoardConfiguration);
+      }
     });
 
     tileType.onValueChanged.AddListener(newIndex =>
@@ -147,7 +163,6 @@ public class NewMatchDialog : MonoBehaviour
       {
         playerSetting.colorDropdown.onValueChanged?.Invoke(chosen);
       }
-
       colorsNotChosen.Remove(playerSetting.colorDropdown.value);
     }
 
@@ -207,10 +222,19 @@ public class NewMatchDialog : MonoBehaviour
   /// <returns>The currently selected board configuration</returns>
   private BoardConfigurationSet.BoardConfiguration SelectedBoardConfiguration()
   {
-    string selectedBoardConfigurationName = boardType.options[boardType.value].text;
+    BoardRuleSetting boardRuleSetting = (BoardRuleSetting)boardType.options[boardType.value];
+    string selectedBoardResource = boardRuleSetting.boardResource;
+    MovementRuleSetting selectedRuleSetting =
+      movementRules.Find(setting => {
+        return setting.GetComponent<Toggle>().isOn;
+      });
     foreach (var boardConfiguration in boardConfigurations.configurations)
     {
-      if (boardConfiguration.name == selectedBoardConfigurationName )
+      bool validMove = boardConfiguration.allowedMoves.Any(
+        (movementRule) => { return movementRule == selectedRuleSetting.movement; });
+      bool validResource = boardConfiguration.allowedBoards.Any(
+        (resourcePath) => { return resourcePath == selectedBoardResource; });
+      if (validMove && validResource )
       {
         return boardConfiguration;
       }

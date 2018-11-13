@@ -1,33 +1,15 @@
 fileFormatVersion: 2
-guid: d06304aa37b3c3749a151081dd85b9f7
+guid: afd3aa3d56720464587c7474cf37114c
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
-    100000: Connect4BoardPiece
-    100002: //RootNode
-    100004: Cutout
-    100006: Cylinder_proxy
-    400000: Connect4BoardPiece
-    400002: //RootNode
-    400004: Cutout
-    400006: Cylinder_proxy
-    2100000: unnamed
-    2100002: Material
-    2300000: Connect4BoardPiece
-    2300002: Cutout
-    2300004: //RootNode
-    2300006: Cylinder_proxy
-    3300000: Connect4BoardPiece
-    3300002: Cutout
-    3300004: //RootNode
-    3300006: Cylinder_proxy
-    4300000: Cutout
-    4300002: Connect4BoardPiece
-    4300004: Cylinder_proxy
-    6400000: Connect4BoardPiece
-    6400002: Cutout
-    6400004: //RootNode
-    6400006: Cylinder_proxy
+    100000: //RootNode
+    400000: //RootNode
+    2100000: Material
+    2300000: //RootNode
+    3300000: //RootNode
+    4300000: Cube
+    4300002: FlatBoard
     7400000: Default Take
     9500000: //RootNode
   externalObjects: {}
@@ -63,7 +45,7 @@ ModelImporter:
     lODScreenPercentages: []
     globalScale: 1
     meshCompression: 0
-    addColliders: 1
+    addColliders: 0
     useSRGBMaterialColor: 1
     importVisibility: 1
     importBlendShapes: 1

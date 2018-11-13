@@ -12,4 +12,44 @@ public class Piece : MonoBehaviour
   /// </summary>
   /// <value>the side that the piece belongs to</value>
   public Side side { get; set; }
+  /// <summary>
+  /// The orientation that the piece is designed for
+  /// </summary>
+  public Tile.TileOrientation orientation;
+
+  /// <summary>
+  /// The rigidbody attached to gameObject
+  /// </summary>
+  private new Rigidbody rigidbody;
+
+  /// <summary>
+  /// A delegate for when a piece has finished placing.
+  /// </summary>
+  public delegate void PieceFinishedPlacing(Piece piece);
+  /// <summary>
+  /// An event that fires when a piece has finished all movement.
+  /// </summary>
+  public event PieceFinishedPlacing OnPieceFinishedPlacing;
+
+  /// <summary>
+  /// The Unity3d hook for initialization
+  /// </summary>
+  private void Start()
+  {
+    rigidbody = GetComponent<Rigidbody>();
+  }
+
+  /// <summary>
+  /// The Unity3D hook for per-frame updates
+  /// </summary>
+  private void Update()
+  {
+    if (rigidbody.IsSleeping() && rigidbody.isKinematic == false)
+    {
+      Debug.LogFormat("Finished placing piece! {0}", gameObject.name);
+      OnPieceFinishedPlacing?.Invoke(this);
+      rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+      rigidbody.isKinematic = true;
+    }
+  }
 }
