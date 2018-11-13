@@ -147,6 +147,10 @@ public class Match : MonoBehaviour
     return true;
   }
 
+  /// <summary>
+  /// A listener for the event fired by a game piece when it stops moving
+  /// </summary>
+  /// <param name="p">The piece that finished moving</param>
   private void OnPieceFinishedPlacing(Piece p)
   {
     Debug.LogFormat("Finished Placing Piece");
