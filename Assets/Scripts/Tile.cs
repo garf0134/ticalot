@@ -53,8 +53,8 @@ public class Tile : MonoBehaviour
         switch (tileOrientation)
         {
           case TileOrientation.Vertical:
-            //orientation = Quaternion.AngleAxis(90.0f, Vector3.right);
-            offset = Vector3.up * maxY * (row + 1);
+            MeshRenderer pieceRenderer = value.GetComponent<MeshRenderer>();
+            offset = Vector3.up * maxY * (row + 1) + Vector3.forward * (-pieceRenderer.bounds.extents.y);
             break;
           case TileOrientation.Horizontal:
             offset = Vector3.up * maxY * 10.0f;
