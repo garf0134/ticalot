@@ -176,7 +176,7 @@ public class MatchHUD : MonoBehaviour
   /// <param name="m">The current match</param>
   public void UpdateGameScore(Match m)
   {
-    string score = string.Join(" | ", m.turnOrder.Select((Side s) => { return string.Format("{0}-{1}", s.name, m.games[s]); }));
+    string score = string.Join(" ", m.turnOrder.Select((Side s) => { return string.Format("{0}-{1}", s.name, m.games[s]); }));
     gameScore.text = score;
   }
 

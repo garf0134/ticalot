@@ -102,7 +102,7 @@ public class PlayerSettings : MonoBehaviour
     {
       Sprite s = Sprite.Create(piece.texture, new Rect(0, 0, 256, 256), Vector2.zero);
       s.name = piece.modelName;
-
+      
       Dropdown.OptionData data = new Dropdown.OptionData()
       {
         image = s,
