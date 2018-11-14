@@ -40,13 +40,28 @@ public class Piece : MonoBehaviour
   }
 
   /// <summary>
+  /// The Unity3D hook for notification when collided objects stay 
+  /// collided with this piece.
+  /// </summary>
+  /// <param name="collision"></param>
+  private void OnCollisionStay(Collision collision)
+  {
+    Board board = collision.gameObject.GetComponent<Board>();
+    Piece piece = collision.gameObject.GetComponent<Piece>();
+
+    if (board != null || piece != null)
+    {
+      rigidbody.Sleep();
+    }
+  }
+
+  /// <summary>
   /// The Unity3D hook for per-frame updates
   /// </summary>
   private void Update()
   {
     if (rigidbody.IsSleeping() && rigidbody.isKinematic == false)
     {
-      Debug.LogFormat("Finished placing piece! {0}", gameObject.name);
       OnPieceFinishedPlacing?.Invoke(this);
       rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
       rigidbody.isKinematic = true;
