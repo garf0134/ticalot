@@ -44,17 +44,28 @@ public class Tile : MonoBehaviour
       if (value != null)
       {
         value.transform.SetParent(transform);
+        float maxY = 0.0f;
+        float centerZ = 0.0f;
 
         MeshRenderer meshRenderer = GetComponentInChildren<MeshRenderer>();
-        float maxY = meshRenderer.bounds.max.y;
-        float centerZ = meshRenderer.bounds.extents.z;
+        if (meshRenderer != null)
+        {
+          maxY = meshRenderer.bounds.max.y;
+          centerZ = meshRenderer.bounds.extents.z;
+        }
+
         Vector3 offset = Vector3.zero;
         Quaternion orientation = Quaternion.identity;
         switch (tileOrientation)
         {
           case TileOrientation.Vertical:
             MeshRenderer pieceRenderer = value.GetComponent<MeshRenderer>();
-            offset = Vector3.up * maxY * (row + 1) + Vector3.forward * (-pieceRenderer.bounds.extents.y);
+            float extentY = 0.0f;
+            if (pieceRenderer != null)
+            {
+              extentY = pieceRenderer.bounds.extents.y;
+            }
+            offset = Vector3.up * maxY * (row + 1) + Vector3.forward * (-extentY);
             break;
           case TileOrientation.Horizontal:
             offset = Vector3.up * maxY * 10.0f;
