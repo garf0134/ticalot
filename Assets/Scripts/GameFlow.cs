@@ -11,11 +11,7 @@ public class GameFlow : MonoBehaviour
   /// <summary>The HUD UI</summary>
   public HUD hud;
 
-  /// <summary>The match object used as the template for all new matches</summary>
-  public GameObject matchPrefab;
-
-
-  #region LookAndFeel
+#region LookAndFeel
   /// <summary>
   /// A designer variable for the color to be shown when the player
   /// hovers over a tile that is a legal move

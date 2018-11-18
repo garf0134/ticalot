@@ -33,7 +33,7 @@ public class Board : MonoBehaviour
   /// <summary>
   /// The private backing of row-major ordering of the tiles belonging to the board
   /// </summary>
-  private Tile[,] tiles = new Tile[0, 0];
+  protected Tile[,] tiles = new Tile[0, 0];
 
   /// <summary>
   /// Returns the tile represented by the row, column index. Only relevant after

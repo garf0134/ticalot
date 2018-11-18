@@ -20,7 +20,7 @@ public class Piece : MonoBehaviour
   /// <summary>
   /// The rigidbody attached to gameObject
   /// </summary>
-  private new Rigidbody rigidbody;
+  protected new Rigidbody rigidbody;
 
   /// <summary>
   /// A delegate for when a piece has finished placing.
@@ -37,6 +37,14 @@ public class Piece : MonoBehaviour
   private void Start()
   {
     rigidbody = GetComponent<Rigidbody>();
+  }
+
+  /// <summary>
+  /// Inner method used by unit tests
+  /// </summary>
+  protected void FirePieceFinishedPlacing()
+  {
+    OnPieceFinishedPlacing?.Invoke(this);
   }
 
   /// <summary>
@@ -60,7 +68,7 @@ public class Piece : MonoBehaviour
   /// </summary>
   private void Update()
   {
-    if (rigidbody.IsSleeping() && rigidbody.isKinematic == false)
+    if (rigidbody != null && rigidbody.IsSleeping() && rigidbody.isKinematic == false)
     {
       OnPieceFinishedPlacing?.Invoke(this);
       rigidbody.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
