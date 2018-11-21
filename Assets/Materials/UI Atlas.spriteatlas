@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: UI Atlas
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 0
+    variantMultiplier: 1
+    packables:
+    - {fileID: 21300000, guid: 966be606197166640a108ef53355eddf, type: 3}
+    - {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    - {fileID: 21300000, guid: 2b4a1682166e4434e8ee7c6f47115b43, type: 3}
+    - {fileID: 21300000, guid: 1f1d5baae1d26404a8a639a07e5c7766, type: 3}
+    - {fileID: 21300000, guid: f4c899d39b015484a9b4e5464802e401, type: 3}
+    - {fileID: 21300000, guid: 967c7b47090d34cf090c40749e45f0b4, type: 3}
+    - {fileID: 21300000, guid: 1238f32bb27c642c5b81174a099459f4, type: 3}
+    - {fileID: 21300000, guid: 935962ddb1e44499dad00e5ca6b38823, type: 3}
+    totalSpriteSurfaceArea: 107875
+    bindAsDefault: 1
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 21300000, guid: 2b4a1682166e4434e8ee7c6f47115b43, type: 3}
+  - {fileID: 21300000, guid: f4c899d39b015484a9b4e5464802e401, type: 3}
+  - {fileID: 21300000, guid: 966be606197166640a108ef53355eddf, type: 3}
+  - {fileID: 21300000, guid: 967c7b47090d34cf090c40749e45f0b4, type: 3}
+  - {fileID: 21300000, guid: 1f1d5baae1d26404a8a639a07e5c7766, type: 3}
+  - {fileID: 21300000, guid: 1238f32bb27c642c5b81174a099459f4, type: 3}
+  - {fileID: 21300000, guid: 935962ddb1e44499dad00e5ca6b38823, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Knob
+  - DottedRoundedRect
+  - UIButtonCorner_0
+  - SF Title
+  - UIButtonDefault_0
+  - SF Generic_0
+  - UIToggleButton
+  - UIPanel_0
+  m_Tag: UI Atlas
+  m_IsVariant: 0
