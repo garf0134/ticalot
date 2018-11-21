@@ -402,7 +402,10 @@ public class NewMatchDialog : MonoBehaviour
   {
     Animator animator = GetComponent<Animator>();
     animator.SetTrigger("Show");
-
+    foreach (var layout in GetComponentsInChildren<LayoutGroup>())
+    {
+      layout.enabled = true;
+    }
     r = null;
   }
 
@@ -425,6 +428,11 @@ public class NewMatchDialog : MonoBehaviour
     r.winCondition = winConditions.First((winCondition) => { return winCondition.GetComponent<Toggle>().isOn; }).winCondition;
     r.boardResource = (boardType.options[boardType.value] as BoardRuleSetting).boardResource;
     r.tileResource = (tileType.options[tileType.value] as TileRuleSetting).tileResource;
+
+    foreach (var layout in GetComponentsInChildren<LayoutGroup>())
+    {
+      layout.enabled = false;
+    }
   }
 
   /// <summary>

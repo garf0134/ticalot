@@ -16,7 +16,7 @@ public class HUD : MonoBehaviour
   /// <summary>A reference to the class that manages the match HUD UI</summary>
   public MatchHUD matchHUD;
   /// <summary>A reference to the title UI</summary>
-  public RectTransform title;
+  public HUDTitle title;
   /// <summary>A reference to the fade-to/fade-from black</summary>
   public CanvasGroup fader;
 
@@ -48,6 +48,7 @@ public class HUD : MonoBehaviour
   public void FadeEnded()
   {
     fader.blocksRaycasts = false;
+    fader.gameObject.SetActive(false);
     OnFadeEnded?.Invoke();
   }
 
@@ -81,6 +82,8 @@ public class HUD : MonoBehaviour
   {
     newMatch.OnNewMatch += OnNewMatch;
     newMatch.OnNewMatch += matchHUD.OnNewMatch;
+    matchHUD.gameObject.SetActive(false);
+    newMatch.gameObject.SetActive(false);
   }
 
   /// <summary>

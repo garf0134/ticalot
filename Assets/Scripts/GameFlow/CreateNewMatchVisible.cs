@@ -65,5 +65,6 @@ public class CreateNewMatchVisible : StateMachineBehaviour
     GameFlow gameFlow = animator.GetComponent<GameFlow>();
     gameFlow.hud.newMatch.OnHideFinished -= OnHideFinished;
     gameFlow.hud.newMatch.OnNewMatch -= OnNewMatch;
+    gameFlow.hud.newMatch.gameObject.SetActive(false);
   }
 }

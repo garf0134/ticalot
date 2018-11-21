@@ -18,6 +18,7 @@ public class ShowMatchHUDBehavior : StateMachineBehaviour
   {
     base.OnStateEnter(animator, stateInfo, layerIndex);
     GameFlow gameFlow = animator.GetComponent<GameFlow>();
+    gameFlow.hud.matchHUD.gameObject.SetActive(true);
     gameFlow.hud.matchHUD.Show();
   }
 }
