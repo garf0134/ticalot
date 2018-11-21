@@ -5,229 +5,122 @@ using UnityEngine.UI;
 using TMPro;
 using System;
 
+/// <summary>
+/// Organizes the UI for the entire game and is responsible for 
+/// starting up the game flow
+/// </summary>
 public class HUD : MonoBehaviour
 {
-  public CanvasGroup canvasFader;
-
+  /// <summary>A reference to the class that manages the new match dialog UI</summary>
   public NewMatchDialog newMatch;
+  /// <summary>A reference to the class that manages the match HUD UI</summary>
   public MatchHUD matchHUD;
-  public RectTransform title;
+  /// <summary>A reference to the title UI</summary>
+  public HUDTitle title;
+  /// <summary>A reference to the fade-to/fade-from black</summary>
+  public CanvasGroup fader;
 
-  public GameObject piecePrefab;
-  public GameObject tilePrefab;
-  public GameObject playerPrefab;
+  /// <summary>The game flow that the UI participates in</summary>
+  public GameFlow gameFlow;
+
+  /// <summary>A delegate listener for the OnFadeEnded, OnFadeBegan events</summary>
+  public delegate void FadeAnimationEvent();
+  /// <summary>The OnFadeBegan event is called when the canvasFader begins its 
+  /// fade-from-black animation</summary>
+  /// 
+  public event FadeAnimationEvent OnFadeBegan;
+  /// <sumary> THe OnFadeEnded event is called when the canvasFader end s its fade
+  /// -from-black animation</sumary>
+  public event FadeAnimationEvent OnFadeEnded;
+
+  /// <summary>
+  /// Begins the fade-from-black animation
+  /// </summary>
+  public void BeginFade()
+  {
+    Animator animator = GetComponent<Animator>();
+    animator.SetTrigger("Begin Fade");
+    OnFadeBegan?.Invoke();
+  }
+
+  /// <summary>A hook into the fade-from-black animation. Called at the end. 
+  /// Triggered by <see cref="BeginFade"/></summary>
+  public void FadeEnded()
+  {
+    fader.blocksRaycasts = false;
+    fader.gameObject.SetActive(false);
+    OnFadeEnded?.Invoke();
+  }
 
 #if UNITY_EDITOR
+  /// <summary>Which named Input Buttons should be checked. These correspond to the 
+  /// string keys used in <see cref="AIPlayer.OnPiecePlaced(Tile, Piece)"/>
+  /// </summary>
   public string[] modes = new string[0];
+  /// <summary> The currently chosen mode from <see cref="modes"/></summary>
   public string debugMode;
+  /// <summary> A reference to the UI used to store the registered (<see cref="Tile.RegisterDebug(string, string)"/> 
+  /// text 
+  /// </summary>
   public TMP_Text debugText;
 #endif
 
-  public Color tileHoverColor;
-  public Color tileHoverIllegalMoveColor;
-  public Color tileNormalColor;
-  public float tileDimensions;
-  public float tileDropRate = 4.0f;
-  public float tileDestroyRate = 10.0f;
+  /// <summary>
+  /// The current match
+  /// </summary>
+  private Match match {  get { return gameFlow.match; } }
 
-  private Match match;
+  /// <summary>
+  /// The tile that the player is currently hovering over
+  /// </summary>
   private Tile hovered;
 
-  private Coroutine tileSetup;
-  private Coroutine tileCleanup;
-  private Coroutine turnIntermission;
-
-  public List<PlayerBase> players = new List<PlayerBase>();
-
-  // Start is called before the first frame update
+  /// <summary>
+  /// Register listeners for the New Match Dialog's OnNewMatch event.
+  /// </summary>
   void Start()
   {
     newMatch.OnNewMatch += OnNewMatch;
     newMatch.OnNewMatch += matchHUD.OnNewMatch;
+    matchHUD.gameObject.SetActive(false);
+    newMatch.gameObject.SetActive(false);
   }
 
-  public void OnShowFinished()
-  {
-    canvasFader.gameObject.SetActive(false);
-    StartCoroutine(WaitForInput());
-  }
-
-  IEnumerator SetupTiles(Ruleset ruleset, Board b)
-  {
-    transform.position += Vector3.up * 4.0f;
-    yield return new WaitForSecondsRealtime(1.0f);
-    for (int r = 0; r < ruleset.rows; r++)
-    {
-      for (int c = 0; c < ruleset.cols; c++ )
-      {
-        GameObject tileInstance = Instantiate<GameObject>(tilePrefab);
-        Tile t = tileInstance.GetComponent<Tile>();
-        t.name = string.Format("{0},{1}", r, c);
-        t.row = r;
-        t.column = c;
-        Material m = tileInstance.GetComponent<MeshRenderer>().material;
-        m.color = tileNormalColor;
-
-        Vector3 finalBoardPosition = Vector3.right * (c - ruleset.cols / 2.0f) * tileDimensions + Vector3.forward * ( (ruleset.rows - r - 1) - ruleset.rows / 2.0f) * tileDimensions;
-        t.transform.SetParent(b.transform);
-        t.transform.position = b.transform.position + finalBoardPosition + Vector3.up * 10.0f;
-
-        yield return new WaitForSecondsRealtime(1 / tileDropRate);
-      }
-    }
-
-    yield return new WaitForSecondsRealtime(1.0f);
-    matchHUD.Show();
-    yield return new WaitForSecondsRealtime(0.5f);
-
-    b.ScanForTiles();
-    match.BeginMatch();
-
-    yield return new WaitForSecondsRealtime(0.5f);
-    match.BeginGame();
-
-    yield return new WaitForSecondsRealtime(0.5f);
-    match.BeginTurn();
-
-    tileSetup = null;
-  }
-
-  private IEnumerator CleanupPieces(Board b)
-  {
-    foreach (Tile t in b.GetComponentsInChildren<Tile>())
-    {
-      if (t.piece)
-      {
-        Destroy(t.piece.gameObject);
-        t.piece = null;
-      }
-
-      yield return new WaitForSecondsRealtime(1 / tileDestroyRate) ;
-    }
-
-    OnPiecesCleanedUp();
-
-    tileCleanup = null;
-  }
-
-  private void OnPiecesCleanedUp()
-  {
-    if (!match.HasWinner())
-    {
-      match.BeginGame();
-
-      turnIntermission = StartCoroutine(TurnIntermission());
-    }
-  }
-
+  /// <summary>
+  /// A listener for the new match dialog's <see cref="NewMatchDialog.OnNewMatch"/>
+  /// event
+  /// Sets up listeners for the match's important events, sets up players from the
+  /// match's turn order and kicks off the coroutine <see cref="SetupTiles(Ruleset, Board)"/>
+  /// </summary>
+  /// <param name="m"></param>
   private void OnNewMatch(Match m)
   {
-    match = m;
-    match.OnTurnBegan += OnTurnBegan; ;
-    match.OnTurnEnded += OnTurnEnded;
-    match.OnGameEnded += OnGameEnded;
-
-    foreach (Side s in m.turnOrder)
-    {
-      GameObject playerObject = new GameObject(s.name);
-      PlayerBase player = null;
-      switch (s.role)
-      {
-        case Side.Role.Human:
-          player = playerObject.AddComponent<HumanPlayer>();
-          break;
-        case Side.Role.AI:
-          AIPlayer aiPlayer = playerObject.AddComponent<AIPlayer>();
-          aiPlayer.strategy = s.aiStrategy;
-          player = aiPlayer;
-          break;
-      }
-
-      if (player == null)
-      {
-        throw new System.ArgumentException("Invalid role argument");
-      }
-      player.side = s;
-      player.match = m;
-      player.hud = this;
-      player.piecePrefab = piecePrefab;
-      player.transform.SetParent(match.transform);
-
-      players.Add(player);
-    }
-    tileSetup = StartCoroutine(SetupTiles(m.ruleset, m.board));
+    m.OnTurnEnded += OnTurnEnded;
   }
 
-  private void OnGameEnded(Match m, Board b, Side winner)
-  {
-    UpdateHover(null);
-
-    if (turnIntermission != null)
-    {
-      StopCoroutine(turnIntermission);
-      turnIntermission = null;
-    }
-
-    if (!m.HasWinner())
-    {
-      tileCleanup = StartCoroutine(CleanupPieces(b));
-    }
-    else
-    {
-      StartCoroutine(WaitForInput());
-    }
-  }
-
-  private IEnumerator WaitForInput()
-  {
-    title.gameObject.SetActive(true);
-
-    while (!Input.GetMouseButtonDown(0))
-    {
-      yield return null;
-    }
-
-    if ( match != null)
-    {
-      Destroy(match.gameObject);
-      match = null;
-    }
-
-    title.gameObject.SetActive(false);
-    
-    newMatch.Show();
-  }
-
-  private void OnTurnBegan(Match m, int turn, Side[] sides)
-  {
-
-  }
-
+  /// <summary>
+  /// A listener for the <see cref="Match.OnTurnEnded"/> event
+  /// </summary>
+  /// <param name="m">The current match</param>
+  /// <param name="turn">The current turn</param>
+  /// <param name="sides">The sides playing in the match, the current side is 
+  /// <code>sides[turn]</code></param>
   private void OnTurnEnded(Match m, int turn, Side[] sides)
   {
     UpdateHover(null);
-
-    if ( tileCleanup == null )
-    {
-      turnIntermission = StartCoroutine(TurnIntermission());
-    }
   }
 
-  private IEnumerator TurnIntermission()
-  {
-    yield return new WaitForSecondsRealtime(1.0f);
-    if (match != null)
-    {
-      match.BeginTurn();
-    }
-  }
-
+  /// <summary>
+  /// Reset which tile is hovered exclusively to all other tiles
+  /// </summary>
+  /// <param name="t">The tile to set as hovered. If null, clears the hovered 
+  /// tile state.</param>
   public void UpdateHover(Tile t)
   {
     if (hovered != null)
     {
       Material previousHoveredTileMaterial = hovered.GetComponentInChildren<MeshRenderer>().material;
-      previousHoveredTileMaterial.color = tileNormalColor;
+      previousHoveredTileMaterial.color = gameFlow.tileNormalColor;
       hovered = null;
     }
 
@@ -238,26 +131,29 @@ public class HUD : MonoBehaviour
       Material m = t.GetComponentInChildren<MeshRenderer>().material;
       if (match.ruleset.ValidateMove(match.board, t, match.turnOrder[match.turn]))
       {
-        m.color = tileHoverColor;
+        m.color = gameFlow.tileHoverColor;
       }
       else
       {
-        m.color = tileHoverIllegalMoveColor;
+        m.color = gameFlow.tileHoverIllegalMoveColor;
       }
     }
   }
 
-  // Update is called once per frame
+  /// <summary>
+  /// In the Unity Editor mode, this function also updates the debug text that
+  /// appears alongside a hovered tile.
+  /// </summary>
   void Update()
   {
+#if UNITY_EDITOR
     // Saved for later when this if-statement will prevent 'normal' processing
     // when some special procesing is occuring.
-    if (match == null || tileSetup != null || tileCleanup != null )
+    if (match == null)
     {
       return;
     }
 
-#if UNITY_EDITOR
     foreach (string mode in modes)
     {
       if (Input.GetButtonDown(mode))

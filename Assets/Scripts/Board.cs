@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class Board : MonoBehaviour
 {
+  /// <summary>The player-facing name of the board</summary>
+  public string boardName;
+
   /// <summary>
   /// The direction enum exists to provide geometric structure and ordering to the tiles on a board.
   /// </summary>
@@ -15,17 +18,39 @@ public class Board : MonoBehaviour
     Diagonal_BottomUp
   }
 
+  /// <summary>
+  /// The number of rows of tiles in the board. This value is only relevant after
+  /// <see cref="ScanForTiles"/> is called.
+  /// </summary>
   public int rows { get { return tiles.GetLength(0); } }
+
+  /// <summary>
+  /// The number of columns of tiles in the board. This value is only relevant after
+  /// <see cref="ScanForTiles"/> is called.
+  /// </summary>
   public int cols { get { return tiles.GetLength(1); } }
-  private Tile[,] tiles;
+
+  /// <summary>
+  /// The private backing of row-major ordering of the tiles belonging to the board
+  /// </summary>
+  protected Tile[,] tiles = new Tile[0, 0];
+
+  /// <summary>
+  /// Returns the tile represented by the row, column index. Only relevant after
+  /// <see cref="ScanForTiles"/> is called.
+  /// </summary>
+  /// <param name="row">The row for the tile</param>
+  /// <param name="col">The column for the tile</param>
+  /// <returns>A <see cref="Tile"/> non-null instance</returns>
   public Tile this[int row, int col] { get { return tiles[row, col]; } }
 
-   // Start is called before the first frame update
-  void Start()
-  {
-    
-  }
-
+  /// <summary>
+  /// Scans the GameObject scene graph beneath the GameObject associated with
+  /// this Board class instance. All Tile Components found in the first scan
+  /// are evaluated for the maximum value of row and column. The 2-dimensional
+  /// Tile array is allocated and a second scan of the scene graph associates
+  /// each Tile commponent to the correct index in the 2-dimensional grid.
+  /// </summary>
   public void ScanForTiles()
   {
     int maxRow = 0;
@@ -44,11 +69,21 @@ public class Board : MonoBehaviour
   }
 
   /// <summary>
-  /// (Half optimized) check for a win condition for the given Side <paramref name="s"/>. 
-  /// Handles the generic match-N where N is the number of consectuive tiles occupied by a piece belong to the given Side.
+  /// (Half optimized) check for a win condition for the given Side 
+  /// <paramref name="s"/>. Taking advantage of the symmetry of the win condition
+  /// we only check four of the eight cardinal directions for the win condition. 
+  /// We have to iterate in a consistent manner, always monotonically increasing
+  /// the indices to avoid missing any areas of the grid 
+  /// <see cref="Neighbor(Tile, Direction)"/>.
+  /// Handles the generic match-N where N is the number of consectuive tiles occupied
+  /// by a piece belong to the given Side.
   /// </summary>
-  /// <param name="s"></param>
-  /// <returns></returns>
+  /// <param name="s">The side to evaluate the win condition for</param>
+  /// <param name="consecutiveTiles">The number of consecutive tiles required by 
+  /// the win condition</param>
+  /// <returns>True if there is a sequence of tiles occupied by pieces belong to
+  /// the given side that is <paramref name="consecutiveTiles"/> in length. False, 
+  /// otherwise.</returns>
   public bool CheckConsecutiveTiles(Side s, int consecutiveTiles)
   {
     foreach ( Tile t in tiles )
@@ -64,16 +99,22 @@ public class Board : MonoBehaviour
     return false;
   }
 
-  public int SumDirection(Tile t, Direction d, Side s)
-  {
-    if ( t != null && (t.piece == null || t.piece.side == s) )
-    {
-      return 1 + SumDirection(Neighbor(t, d), d, s);
-    }
 
-    return 0;
-  }
-
+  /// <summary>
+  /// Recursively checks a direction along a given tile. The terminating
+  /// condition is when the number of iterations is 1. At that point we
+  /// can return true to indicate that a match has been found. If there 
+  /// is no tile, nor piece, nor matching side then false is returned. 
+  /// Otherwise we find the neighboring piece in the given direction and
+  /// recursively call CheckDirection with one fewer iteration to look for.
+  /// </summary>
+  /// <param name="t">The tile to be checked in the current recursion</param>
+  /// <param name="d">The direction to check</param>
+  /// <param name="s">The side to compare pieces encountered for</param>
+  /// <param name="numIterations">The lenght of consecutive piecese belonging
+  /// to a specific side to check for</param>
+  /// <returns>True if the method found a sequence in the given direction,
+  /// for the given side, for the given number of tiles.</returns>
   private bool CheckDirection(Tile t, Direction d, Side s, int numIterations)
   {
     if (t != null && t.piece != null && t.piece.side == s)
@@ -88,33 +129,17 @@ public class Board : MonoBehaviour
     return false;
   }
 
-  public void Neighbors(Tile t, Direction d, ref List<Tile> forwards, ref List<Tile> backwards)
-  {
-    int row = t.row;
-    int column = t.column;
-
-    // Forward direction first
-    switch (d)
-    {
-      case Direction.Vertical:
-        for (int r = row, c = column; r >= 0 && c >= 0; r--) { backwards.Add(this[r, c]); }
-        for (int r = row, c = column; r < rows && c < cols; r++) { forwards.Add(this[r, c]); }
-        break;
-      case Direction.Horizontal:
-        for (int r = row, c = column; r >= 0 && c >= 0; c--) { backwards.Add(this[r, c]); }
-        for (int r = row, c = column; r < rows && c < cols; c++) { forwards.Add(this[r, c]); }
-        break;
-      case Direction.Diagonal_TopDown:
-        for (int r = row, c = column; r >= 0 && c >= 0; r--,c--) { backwards.Add(this[r, c]); }
-        for (int r = row, c = column; r < rows && c < cols; r++,c++) { forwards.Add(this[r, c]); }
-        break;
-      case Direction.Diagonal_BottomUp:
-        for (int r = row, c = column; r >= 0 && c >= 0; r++, c--) { backwards.Add(this[r, c]); }
-        for (int r = row, c = column; r < rows && c < cols; r--, c++) { forwards.Add(this[r, c]); }
-        break;
-    }
-  }
-
+  /// <summary>
+  /// A lookup method to retrieve a tile that is contiguous to the given tile 
+  /// in a specific direction. Since <see cref="Board.Direction"/> only looks
+  /// forward, this method follows suit and only scans in a 'forward' direction
+  /// as well.
+  /// </summary>
+  /// <param name="t">The tile used a frame of reference</param>
+  /// <param name="d">The direction to look</param>
+  /// <returns>Instance of Tile that is a neighbor in the direction requested
+  /// or null if the Tile instance in the direction requested is outside 
+  /// the board</returns>
   public Tile Neighbor(Tile t, Direction d)
   {
     switch (d)
@@ -133,11 +158,5 @@ public class Board : MonoBehaviour
         break;
     }
     return null;
-  }
-
-  // Update is called once per frame
-  void Update()
-  {
-
   }
 }
