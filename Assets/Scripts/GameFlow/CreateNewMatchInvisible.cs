@@ -27,6 +27,7 @@ public class CreateNewMatchInvisible : StateMachineBehaviour
     
     GameFlow gameFlow = animator.GetComponent<GameFlow>();
     gameFlow.hud.newMatch.OnShowFinished += OnShowFinished;
+    gameFlow.hud.newMatch.gameObject.SetActive(true);
     gameFlow.hud.newMatch.Show();
 
     this.animator = animator;

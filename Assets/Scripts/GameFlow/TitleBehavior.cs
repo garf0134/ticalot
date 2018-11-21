@@ -8,6 +8,11 @@ using UnityEngine;
 public class TitleBehavior : StateMachineBehaviour
 {
   /// <summary>
+  /// The title shown at the beginning of the app
+  /// </summary>
+  HUDTitle hudTitle;
+
+  /// <summary>
   /// The callback for a StateMachineBehaviour's enter event
   /// Clears GameFlow flags that were set in a previous match and activates the Title UI
   /// </summary>
@@ -18,8 +23,8 @@ public class TitleBehavior : StateMachineBehaviour
   {
     base.OnStateEnter(animator, stateInfo, layerIndex);
     GameFlow gameFlow = animator.GetComponent<GameFlow>();
-    Animator titleAnimator = gameFlow.hud.title.GetComponent<Animator>();
-    titleAnimator.SetTrigger("Show");
+    hudTitle = gameFlow.hud.title;
+    hudTitle.Show();
 
     animator.SetBool("Match Won", false);
     animator.SetBool("Game Ended", false);
@@ -53,8 +58,6 @@ public class TitleBehavior : StateMachineBehaviour
   public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
   {
     base.OnStateExit(animator, stateInfo, layerIndex);
-    GameFlow gameFlow = animator.GetComponent<GameFlow>();
-    Animator titleAnimator = gameFlow.hud.title.GetComponent<Animator>();
-    titleAnimator.SetTrigger("Hide");
+    hudTitle.Hide();
   }
 }
